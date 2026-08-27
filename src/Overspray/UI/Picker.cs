@@ -97,6 +97,15 @@ namespace Overspray.UI
 
         public bool IsOpen { get; private set; }
 
+        /// <summary>
+        /// Whether Posted Up is installed beside this, set by Main.
+        ///
+        /// Only ever used to EXPLAIN things. Somebody who opens this and finds the spray
+        /// switched off deserves to be told why on the row itself, not left to guess or to go
+        /// and read a log -- being off is the one state that looks identical to being broken.
+        /// </summary>
+        public bool AlongsidePostedUp;
+
         public Color Colour => Colours[_pick];
 
         /// <summary>
@@ -226,6 +235,20 @@ namespace Overspray.UI
             try
             {
                 kept = IniFile.SetValue(Paths.Ini, "Paint", "PaintEnabled", word);
+
+                // TURNING IT ON HAS TO STICK. With Posted Up installed the paint is switched
+                // off at every launch on purpose, so without this, choosing to run both would
+                // be undone by the next load and look like the switch simply did not work.
+                // Using it is the explicit decision that retires the automatic default.
+                if (_cfg.PaintEnabled && AlongsidePostedUp)
+                {
+                    IniFile.SetValue(Paths.Ini, "General", "StandDownForPostedUp", "false");
+
+                    Log.Info("Both this and Posted Up's app will paint from now on. They are " +
+                             "the same engine, so expect two of everything -- set " +
+                             "StandDownForPostedUp back to true, or switch the spray off " +
+                             "here, to undo it.");
+                }
             }
             catch (Exception ex)
             {
@@ -350,7 +373,11 @@ namespace Overspray.UI
             // Everything else does stop: no marks, no jet, no reticle, no can in his hand and
             // no hidden weapon. The extinguisher goes back to being the game's.
             Button(x, y, inner, _row == Row.Paint,
-                   _cfg.PaintEnabled ? "SPRAY PAINT" : "SPRAY PAINT  --  OFF",
+                   _cfg.PaintEnabled
+                       ? "SPRAY PAINT"
+                       : AlongsidePostedUp
+                           ? "SPRAY PAINT  --  OFF, POSTED UP HAS IT ON THE PHONE"
+                           : "SPRAY PAINT  --  OFF",
                    _cfg.PaintEnabled ? "ON" : "OFF",
                    Ink,
                    _cfg.PaintEnabled ? Hud.Legible(Colour) : Warn);

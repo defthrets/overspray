@@ -30,6 +30,9 @@ namespace Overspray
         private int _lastSave;
         private bool _parked;
 
+        /// <summary>Whether Posted Up is installed beside this. See the note in the constructor.</summary>
+        private bool _alongsidePostedUp;
+
         public Main()
         {
             try
@@ -47,22 +50,33 @@ namespace Overspray
                 _spraycan = new Spraycan(_cfg.Paint);
 
 
-                // BEFORE ANYTHING ELSE TOUCHES THE WORLD. Two copies of one engine both
-                // painting is not a degraded experience, it is a different one -- and it is
-                // very hard to diagnose from inside the game, because everything looks like it
-                // works and merely looks wrong.
-                if (_cfg.StandDownForPostedUp &&
-                    System.IO.File.Exists(System.IO.Path.Combine(Paths.Scripts, "Hoodrich.dll")))
-                {
-                    _parked = true;
+                // THE KEY ALWAYS WORKS. This used to park the whole script when Posted Up
+                // was installed, which stopped the conflict and also stopped F3 -- so the one
+                // screen that could have explained any of it was the screen you could not
+                // open. A mod that silently does nothing is worse than one that does the
+                // wrong thing, because at least the wrong thing tells you it is there.
+                //
+                // So the paint STARTS off instead. Two copies of one engine both painting is
+                // not a degraded experience, it is a different one -- two cans, two plumes,
+                // two decals for every one you meant -- and it is very hard to diagnose from
+                // inside the game, because everything looks like it works and merely looks
+                // wrong. Off by default avoids that; the switch in the picker turns it on for
+                // anybody who wants both, and that choice is written to the ini and sticks.
+                _alongsidePostedUp =
+                    System.IO.File.Exists(System.IO.Path.Combine(Paths.Scripts, "Hoodrich.dll"));
 
-                    Log.Warn("Posted Up is installed here and it has this built in as a " +
-                             "Graffiti app on the phone, running the same engine. Two copies " +
-                             "both paint -- two cans, two plumes and two decals for every one " +
-                             "you meant -- so this standalone has stood down. Use the phone " +
-                             "app, or set StandDownForPostedUp=false in the ini to run both.");
-                    return;
+                if (_alongsidePostedUp && _cfg.StandDownForPostedUp)
+                {
+                    _cfg.Paint.PaintEnabled = false;
+
+                    Log.Warn("Posted Up is installed here and has this built in as a Graffiti " +
+                             "app on the phone, running the same engine. Both painting at once " +
+                             "gives two cans, two plumes and two decals for every one you " +
+                             "meant, so the spray is switched OFF to start with. F3 still " +
+                             "works -- turn SPRAY PAINT on in there if you want both.");
                 }
+
+                _picker.AlongsidePostedUp = _alongsidePostedUp;
 
                 if (_cfg.Persist) Load();
 
