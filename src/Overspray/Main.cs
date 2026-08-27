@@ -25,6 +25,7 @@ namespace Overspray
         private readonly Sprayer _sprayer;
         private readonly Picker _picker;
         private readonly Can _can;
+        private readonly Bystanders _street = new Bystanders();
         private readonly Spraycan _spraycan;
 
         private int _lastSave;
@@ -162,6 +163,10 @@ namespace Overspray
 
                 if (_cfg.Paint.PaintEnabled) _marks.Sweep();
 
+                // The street's opinion of a man with a can. Only while he is holding one, and
+                // it hands everything back the moment he is not.
+                _street.Update(Can.Out() && _cfg.Paint.PaintEnabled);
+
                 if (!_cfg.Persist) return;
 
                 // Only when there is something new to write, and not often.
@@ -219,6 +224,7 @@ namespace Overspray
                 // Before anything else: this puts the weapon model back and takes the prop off
                 // his hand, and leaving either behind outlives the mod.
                 if (_spraycan != null) _spraycan.Away();
+                if (_street != null) _street.Release();
 
                 // Saved BEFORE the decals come off, or the record is written after the thing it
                 // is a record of has been taken down.
