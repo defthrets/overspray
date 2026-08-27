@@ -65,7 +65,10 @@ namespace Overspray.Core
                 if (Enum.TryParse(key, true, out parsed)) s.MenuKey = parsed;
 
                 p.Range = Clamp(ini.GetFloat("Paint", "Range", p.Range), 1f, 20f);
-                p.Rate = Clamp(ini.GetFloat("Paint", "Rate", p.Rate), 1f, 40f);
+                p.Rate = Clamp(ini.GetFloat("Paint", "Rate", p.Rate), 1f, 60f);
+                p.Continuous = ini.GetBool("Paint", "Continuous", p.Continuous);
+                p.Overlap = Clamp(ini.GetFloat("Paint", "Overlap", p.Overlap), 0.1f, 2f);
+                p.MaxFill = (int)Clamp(ini.GetFloat("Paint", "MaxFill", p.MaxFill), 0f, 64f);
                 p.SizeAtOneMetre = Clamp(ini.GetFloat("Paint", "SizeAtOneMetre", p.SizeAtOneMetre), 0.01f, 2f);
                 p.SpreadPower = Clamp(ini.GetFloat("Paint", "SpreadPower", p.SpreadPower), 0.5f, 3f);
                 p.MinSize = Clamp(ini.GetFloat("Paint", "MinSize", p.MinSize), 0.02f, 3f);
