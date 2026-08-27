@@ -207,11 +207,27 @@ namespace Overspray
 
             var c = _picker.Colour;
 
-            UI.Hud.Box(0.012f, 0.762f, UI.Hud.X(0.020f), 0.026f, c);
-            UI.Hud.Frame(0.012f, 0.762f, UI.Hud.X(0.020f), 0.026f, 0.0015f,
-                         System.Drawing.Color.FromArgb(255, 30, 30, 30));
+            // THE CAN, not a coloured rectangle. This was the last place in either mod still
+            // showing a swatch where the tool should be -- and a small square of colour in a
+            // corner is the sort of thing a player reads as a bug in somebody else's HUD.
+            //
+            // Tinted, so it still answers the only question this badge exists for: what is
+            // loaded. Legible, because the near-black would otherwise vanish into the corner.
+            const float tall = 0.034f;
 
-            UI.Hud.Text(_cfg.MenuKey.ToString(), 0.040f, 0.763f, 0.28f,
+            var wide = UI.Hud.X(tall) * 0.4412f;
+
+            if (!UI.Hud.Picture("can.png", 0.020f, 0.762f + tall * 0.5f, wide, tall, 0f,
+                                UI.Hud.Legible(c)))
+            {
+                // No art, no badge shape -- fall back to what was here before rather than
+                // leaving the key floating on its own with nothing beside it.
+                UI.Hud.Box(0.012f, 0.762f, UI.Hud.X(0.020f), 0.026f, c);
+                UI.Hud.Frame(0.012f, 0.762f, UI.Hud.X(0.020f), 0.026f, 0.0015f,
+                             System.Drawing.Color.FromArgb(255, 30, 30, 30));
+            }
+
+            UI.Hud.Text(_cfg.MenuKey.ToString(), 0.032f, 0.768f, 0.28f,
                         System.Drawing.Color.FromArgb(255, 150, 150, 150));
         }
 

@@ -189,11 +189,20 @@ def tile(_tin):
     box(0.20, 0.24, 0.34, 0.35, 0.015)     # waist
     box(0.13, 0.09, 0.41, 0.26, 0.04)      # cap
 
+    # The nozzle, out of the cap's flank, matching the big can. It was left off entirely here
+    # -- the dots alone were doing the work -- and that made the tile the one place in the mod
+    # where the can was a different object. Small, but it is the piece that says which way the
+    # thing points, and the dots now visibly come OUT of something instead of just existing.
+    box(0.40, 0.13, 0.53, 0.21, 0.02)
+
     # Three, falling, with the gaps widening -- which is what reads as travel rather than as a
     # row of buttons. Four was one too many; the last one always merged into its neighbour.
-    for fx, fy, r in ((0.60, 0.26, 0.085),
-                      (0.78, 0.17, 0.058),
-                      (0.92, 0.09, 0.034)):
+    #
+    # Re-aimed off the nozzle tip rather than off the top of the cap, or they trail from a
+    # point nothing is emitting from.
+    for fx, fy, r in ((0.63, 0.15, 0.080),
+                      (0.79, 0.11, 0.055),
+                      (0.92, 0.07, 0.033)):
         cx, cy, rr = fx * S, fy * S, r * S
         d.ellipse((cx - rr, cy - rr, cx + rr, cy + rr), fill=255)
 
