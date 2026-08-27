@@ -138,9 +138,16 @@ def can():
     box(56, 98, 94, 118, 3)            # the neck itself, narrow on purpose
     box(38, 44, 112, 104, 10)          # cap, well short of the body's width
 
-    # A small tip ON TOP of the cap rather than beside it, so it reads as a nozzle you press
-    # instead of a spout you pour from.
-    box(84, 26, 106, 48, 4)
+    # The tip OUT OF THE SIDE of the cap, not off the top of it.
+    #
+    # On top is where a pump handle or an aerosol button lives, and on a plain square cap it
+    # reads as a chimney. A spray can's nozzle points out sideways: you aim the can at the wall
+    # and press DOWN with your finger, so the paint has to leave at right angles to the press.
+    #
+    # It is also the only thing in the silhouette that says which way the can is facing, which
+    # matters more than it sounds -- the shape rotates during the shake, and a symmetrical can
+    # just wobbles while this one turns.
+    box(108, 54, 136, 76, 4)
 
     # Label band, punched out, so the silhouette still has something to read against when it
     # rotates during the shake.
