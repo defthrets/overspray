@@ -92,7 +92,16 @@ namespace Overspray
 
                 // NOT WHILE THE PICKER IS UP. The panel eats the controls, and a trigger held
                 // through a menu is a wall painted by accident while somebody chooses a colour.
-                if (_picker.IsOpen)
+                // SWITCHED OFF IS A HANDS-OFF STATE, and that matters more here than it
+                // looks: Posted Up runs this same engine, and if this one keeps maintaining
+                // its own decals while switched off it spends pool slots that the app you
+                // ARE using needs -- so its paint starts vanishing for no reason a player
+                // could ever connect to a mod they turned off.
+                //
+                // Existing marks stay on the wall until the game streams them out. They are
+                // not wiped, because turning a mod off should not destroy your work, and the
+                // record is kept so switching back on brings them all back.
+                if (_picker.IsOpen || !_cfg.Paint.PaintEnabled)
                 {
                     _sprayer.Stop();
                 }
@@ -118,7 +127,8 @@ namespace Overspray
                 // ammo, so there is nothing to refund and Feed does nothing. Gating it on the
                 // extinguisher being out would mean resetting the tracker every other tick,
                 // and the reset also clears the tint, which would then be re-applied forever.
-                _can.Feed(_cfg.Paint);
+                // Off means the tank empties the way the game intended, too.
+                if (_cfg.Paint.PaintEnabled) _can.Feed(_cfg.Paint);
 
                 // The look, over the top of all of it. Reads the sprayer rather than the
                 // trigger so the animation and the paint can never disagree about whether he
@@ -136,7 +146,7 @@ namespace Overspray
                     UI.Reticle.Draw(_picker.Colour, UI.Reticle.Aiming(), _sprayer.Spraying);
                 }
 
-                _marks.Sweep();
+                if (_cfg.Paint.PaintEnabled) _marks.Sweep();
 
                 if (!_cfg.Persist) return;
 

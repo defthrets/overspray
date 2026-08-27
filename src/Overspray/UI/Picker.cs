@@ -71,7 +71,7 @@ namespace Overspray.UI
         ///
         /// Two buttons. The tool you ask for is the tool you get, reach and all.
         /// </summary>
-        private enum Row { Swatches, TakeCan, TakeExt, Clear }
+        private enum Row { Swatches, TakeCan, TakeExt, Paint, Clear }
 
         private readonly Paint.PaintConfig _cfg;
         private readonly Paint.Marks _marks;
@@ -165,6 +165,10 @@ namespace Overspray.UI
                     Take(false);
                     break;
 
+                case Row.Paint:
+                    Switch();
+                    break;
+
                 case Row.Clear:
                     if (!_armed)
                     {
@@ -203,11 +207,44 @@ namespace Overspray.UI
             Log.Info(asCan ? "Took a spray can." : "Took an extinguisher.");
         }
 
+        /// <summary>
+        /// Turns the paint on or off, and remembers which.
+        ///
+        /// WRITTEN BACK TO THE INI, because a switch that forgets is not a setting -- it is a
+        /// thing you have to turn off again every time you load a save, which is worse than
+        /// not having it. IniFile can write a single key without rewriting the file, so the
+        /// comments and everything else somebody has tuned survive it.
+        /// </summary>
+        private void Switch()
+        {
+            _cfg.PaintEnabled = !_cfg.PaintEnabled;
+
+            var word = _cfg.PaintEnabled ? "true" : "false";
+
+            var kept = false;
+
+            try
+            {
+                kept = IniFile.SetValue(Paths.Ini, "Paint", "PaintEnabled", word);
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("Could not write the ini: " + ex.Message);
+            }
+
+            Hud.Sound(_cfg.PaintEnabled ? "SELECT" : "BACK", "HUD_FRONTEND_DEFAULT_SOUNDSET");
+
+            Log.Info("Spray paint " + (_cfg.PaintEnabled ? "on" : "off") +
+                     (kept
+                         ? ", and the ini remembers it."
+                         : " -- the ini could not be written, so this lasts the session only."));
+        }
+
         private void Move(int by)
         {
             var n = (int)_row + by;
-            if (n < 0) n = 3;
-            if (n > 3) n = 0;
+            if (n < 0) n = 4;
+            if (n > 4) n = 0;
 
             _row = (Row)n;
 
@@ -228,7 +265,7 @@ namespace Overspray.UI
             if (!IsOpen) return;
 
             var w = Hud.X(0.45f);
-            var h = Pad * 2f + 0.040f + SwatchH + 0.020f + ButtonH * 3f + 0.016f + 0.030f;
+            var h = Pad * 2f + 0.040f + SwatchH + 0.020f + ButtonH * 4f + 0.024f + 0.030f;
 
             var left = 0.5f - w * 0.5f;
             var top = 0.5f - h * 0.5f;
@@ -303,6 +340,23 @@ namespace Overspray.UI
 
             y += ButtonH + 0.008f;
 
+            // ---- on or off ----
+            //
+            // This turns the PAINT off, not the script. The script has to stay alive or the
+            // key that opens this panel stops working too, and then the only way back is
+            // editing a file -- which is a fine way to lose somebody who just wanted to try
+            // spraying without it.
+            //
+            // Everything else does stop: no marks, no jet, no reticle, no can in his hand and
+            // no hidden weapon. The extinguisher goes back to being the game's.
+            Button(x, y, inner, _row == Row.Paint,
+                   _cfg.PaintEnabled ? "SPRAY PAINT" : "SPRAY PAINT  --  OFF",
+                   _cfg.PaintEnabled ? "ON" : "OFF",
+                   Ink,
+                   _cfg.PaintEnabled ? Hud.Legible(Colour) : Warn);
+
+            y += ButtonH + 0.008f;
+
             // ---- wipe it all ----
             var marks = _marks.Count;
 
@@ -314,7 +368,7 @@ namespace Overspray.UI
                    _armed ? Warn : Ink,
                    _armed ? Warn : Hud.Legible(Colour));
 
-            Hud.Text("ARROWS  choose      ENTER  take      BACKSPACE  close",
+            Hud.Text("ARROWS  move      ENTER  choose      BACKSPACE  close",
                      x, top + h - 0.024f, 0.27f, Dim);
         }
 
