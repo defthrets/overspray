@@ -31,10 +31,11 @@ namespace Overspray.UI
         private static readonly Color Warn = Color.FromArgb(255, 214, 78, 62);
 
         /// <summary>
-        /// The ten.
+        /// The eleven.
         ///
         /// Spread round the wheel rather than picked for prettiness, so whatever somebody has
-        /// in mind when they think "I want that X" has something near it.
+        /// in mind when they think "I want that X" has something near it -- plus the two
+        /// neutrals on the end, which is where most actual graffiti lives.
         /// </summary>
         private static readonly Color[] Colours =
         {
@@ -47,13 +48,19 @@ namespace Overspray.UI
             Color.FromArgb(255,  52, 110, 226),   // blue
             Color.FromArgb(255, 140,  76, 220),   // purple
             Color.FromArgb(255, 240, 100, 180),   // pink
-            Color.FromArgb(255, 245, 245, 245)    // white
+            Color.FromArgb(255, 245, 245, 245),   // white
+
+            // NOT PURE ZERO. The decal arguments multiply the texture, so 0,0,0 is a true
+            // black that reads as a hole punched in the wall rather than as paint on it -- and
+            // it takes the plume down with it, leaving nothing to aim by. A hair above black
+            // keeps both legible and is indistinguishable from black on a wall.
+            Color.FromArgb(255,  20,  20,  22)    // black
         };
 
         private static readonly string[] Names =
         {
             "red", "orange", "yellow", "lime", "green",
-            "cyan", "blue", "purple", "pink", "white"
+            "cyan", "blue", "purple", "pink", "white", "black"
         };
 
         private enum Row { Swatches, Take, Look, Clear }
@@ -195,7 +202,7 @@ namespace Overspray.UI
         {
             if (!IsOpen) return;
 
-            var w = Hud.X(0.42f);
+            var w = Hud.X(0.45f);
             var h = Pad * 2f + 0.040f + SwatchH + 0.020f + ButtonH * 3f + 0.016f + 0.030f;
 
             var left = 0.5f - w * 0.5f;

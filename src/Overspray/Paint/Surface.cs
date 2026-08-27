@@ -118,5 +118,35 @@ namespace Overspray.Paint
             side.Normalize();
             return side;
         }
+
+        /// <summary>
+        /// The same direction, spun round the surface by a given angle.
+        ///
+        /// WITHOUT THIS EVERY SPLATTER IS THE SAME SPLATTER. Along() is deterministic -- it
+        /// crosses the normal with world up -- so every mark on a given wall came out at the
+        /// identical angle, and a wall covered in one blob repeated fifty times reads as a
+        /// tiling texture rather than as paint. Size jitter alone does not hide it, because
+        /// the eye picks up the repeated shape long before it notices the scale.
+        ///
+        /// side and the vector below are both unit and both perpendicular to the normal, so
+        /// they span the plane the decal lies in. Rotating inside that plane is therefore
+        /// Rodrigues with its third term dropped: that term needs the component of side along
+        /// the axis, and here it is zero by construction.
+        /// </summary>
+        public static Vector3 Along(Vector3 normal, float turn)
+        {
+            var side = Along(normal);
+
+            var up = Vector3.Cross(normal, side);
+            up.Normalize();
+
+            var c = (float)Math.Cos(turn);
+            var s = (float)Math.Sin(turn);
+
+            var spun = side * c + up * s;
+            spun.Normalize();
+
+            return spun;
+        }
     }
 }
