@@ -36,13 +36,13 @@ PAD = 90             # room for the halo to fall off into
 random.seed(20260827)
 
 
-def wordmark():
+def wordmark(text):
     font = ImageFont.truetype(FONT, SIZE)
 
     # Measured glyph by glyph so the tracking is real rather than a guess at a string width.
     glyphs = []
     total = 0
-    for ch in TEXT:
+    for ch in text:
         box = font.getbbox(ch)
         w = box[2] - box[0]
         glyphs.append((ch, box, w))
@@ -160,17 +160,31 @@ def main():
     if not os.path.isdir(OUT):
         os.makedirs(OUT)
 
-    mark = wordmark()
-    mark.save(os.path.join(OUT, 'logo.png'))
-    print('  logo.png  %dx%d' % mark.size)
-
     tin = can()
-    tin.save(os.path.join(OUT, 'can.png'))
-    print('  can.png   %dx%d' % tin.size)
 
-    print('\n  aspect for the draw code:')
-    print('    logo  %.4f  (width = height x this)' % (mark.size[0] / float(mark.size[1])))
-    print('    can   %.4f' % (tin.size[0] / float(tin.size[1])))
+    mark = wordmark(TEXT)
+    mark.save(os.path.join(OUT, 'logo.png'))
+    tin.save(os.path.join(OUT, 'can.png'))
+    print('  overspray  logo.png %dx%d   can.png %dx%d' % (mark.size + tin.size))
+
+    # And the same treatment for the app inside Posted Up.
+    #
+    # A DIFFERENT WORD ON PURPOSE. The tile there is called Graffiti and the mod it lives in
+    # is called Posted Up, so a header reading OVERSPRAY would be a third name for a thing
+    # that already has two. What carries across is the look, not the wordmark.
+    other = os.path.join(os.path.dirname(HERE), 'hoodrich', 'data', 'icons')
+
+    if os.path.isdir(other):
+        g = wordmark('GRAFFITI')
+        g.save(os.path.join(other, 'graffiti.png'))
+        tin.save(os.path.join(other, 'spraycan.png'))
+        print('  hoodrich   graffiti.png %dx%d   spraycan.png %dx%d' % (g.size + tin.size))
+        print('    graffiti aspect %.4f' % (g.size[0] / float(g.size[1])))
+    else:
+        print('  hoodrich   not beside this repo; skipped')
+
+    print('    logo aspect %.4f   can aspect %.4f'
+          % (mark.size[0] / float(mark.size[1]), tin.size[0] / float(tin.size[1])))
 
 
 if __name__ == '__main__':

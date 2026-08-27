@@ -81,6 +81,7 @@ namespace Overspray.Core
                 p.CanJetScale = Clamp(ini.GetFloat("Paint", "CanJetScale", p.CanJetScale), 0.05f, 4f);
                 p.JetFollowsAim = ini.GetBool("Paint", "JetFollowsAim", p.JetFollowsAim);
                 p.TintTheCan = ini.GetBool("Paint", "TintTheCan", p.TintTheCan);
+                p.CanSeat = Clamp(ini.GetFloat("Paint", "CanSeat", p.CanSeat), -0.2f, 0.2f);
                 p.PaintEnabled = ini.GetBool("Paint", "PaintEnabled", p.PaintEnabled);
                 p.SprayCanLook = ini.GetBool("Paint", "SprayCanLook", p.SprayCanLook);
 
