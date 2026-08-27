@@ -80,9 +80,17 @@ namespace Overspray.Paint
         /// <summary>The thin line, which is what tells you where the paint is about to go.</summary>
         private static readonly Plume[] Jets =
         {
-            new Plume(null, "scr_lamgraff_paint_spray", 1.1f, false),
-            new Plume(null, "scr_lamgraff_paint_spray", 1.1f, true),
-            new Plume("scr_lamgraff", "scr_lamgraff_paint_spray", 1.1f, true)
+            // scr_playerlamgraff IS THE ASSET, and neither of the two names I tried before
+            // was it. A ptfx asked for out of the wrong asset does not throw and does not log,
+            // it plays nothing -- which is why a whole session went by with no jet and no
+            // complaint. Confirmed from a working implementation rather than guessed again.
+            new Plume("scr_playerlamgraff", "scr_lamgraff_paint_spray", 1.1f, true),
+
+            // Real core effects, all three of which exist. ent_sht_extinguisher is literally
+            // the extinguisher discharge, which is the right shape whichever tool is in hand.
+            new Plume("core", "ent_sht_extinguisher", 0.8f, true),
+            new Plume("core", "ent_sht_water", 0.7f, true),
+            new Plume("core", "ent_sht_steam", 0.6f, true)
         };
 
         /// <summary>
@@ -215,7 +223,7 @@ namespace Overspray.Paint
             // Quadratic rather than a cone. A cone is what a spray geometrically is and it is
             // not what one looks like -- the plume holds together while it has pressure and
             // opens out as it loses it, so the far half widens faster than the near half.
-            var away = GameplayCamera.Position.DistanceTo(hit.At);
+            var away = hit.Away;
 
             var size = _cfg.LiveSizeAtOneMetre *
                        (float)Math.Pow(Math.Max(0.2f, away), _cfg.LiveSpreadPower) *
@@ -405,7 +413,13 @@ namespace Overspray.Paint
                                             28422, p.Size, false, false, false);
                 }
 
-                if (fx == 0) continue;
+                // A HANDLE IS NOT AN EFFECT. A ptfx name the build does not have returns a
+                // handle for an effect that does not exist, so the handle alone proves nothing
+                // and the ladder would stop at the first name that merely failed politely.
+                if (fx == 0 || !Function.Call<bool>(Hash.DOES_PARTICLE_FX_LOOPED_EXIST, fx))
+                {
+                    continue;
+                }
 
                 Function.Call(Hash.SET_PARTICLE_FX_LOOPED_COLOUR, fx, r, g, b, false);
                 Function.Call(Hash.SET_PARTICLE_FX_LOOPED_ALPHA, fx, alpha);

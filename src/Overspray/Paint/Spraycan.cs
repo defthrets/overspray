@@ -34,8 +34,8 @@ namespace Overspray.Paint
         private static readonly string[] Cans =
         {
             "prop_cs_spray_can",
-            "prop_paint_spray01b",
-            "ng_proc_spraycan01a"
+            "prop_spray_can",
+            "prop_paint_spray01a"
         };
 
         private const string Dict = "anim@scripted@freemode@postertag@graffiti_spray@male@";
@@ -47,7 +47,19 @@ namespace Overspray.Paint
         /// <summary>Upper body, controllable. See the class note.</summary>
         private const int UpperControllable = 51;
 
-        /// <summary>SKEL_R_Hand.</summary>
+        /// <summary>
+        /// PH_R_Hand -- and the name matters, because it is not the one I first wrote.
+        ///
+        /// SKEL_R_Hand is 57005 and is the WRIST JOINT, the thing the arm deforms around, so a
+        /// prop hung off it sits beside the hand rather than in the grip and every clip that
+        /// changes the grip moves it again. 28422 is a non-deforming helper bone the animators
+        /// put there specifically to hang props on -- which is why props attached to it want no
+        /// offset and no rotation at all.
+        ///
+        /// It is also what aims the spray. Rockstar's graffiti jet is authored to come out of a
+        /// can sitting on THIS bone at THIS rotation, so a can twisted to look right by eye
+        /// sends the paint out sideways.
+        /// </summary>
         private const int RightHand = 28422;
 
         private readonly Settings _cfg;
@@ -77,7 +89,7 @@ namespace Overspray.Paint
         /// <summary>
         /// Called every tick. Puts the can up when the tool is out, takes it away when it is not.
         /// </summary>
-        public void Update(bool spraying)
+        public void Update(bool spraying, bool aiming)
         {
             if (!_cfg.SprayCanLook || !Can.Out())
             {
@@ -105,10 +117,45 @@ namespace Overspray.Paint
                 // Then he is holding an extinguisher and a spray can, which is odd but works.
             }
 
+            // FACING THE WAY HE IS AIMING.
+            //
+            // Normally the weapon does this -- a man pointing a gun turns to point it. Here
+            // the weapon is invisible and an upper-body clip is blended over the aim pose, and
+            // between them the turn stops happening: he sprays across his own shoulder while
+            // the paint lands wherever the camera is looking, which reads as the paint being
+            // wrong rather than the man being wrong.
+            //
+            // Desired rather than SET_ENTITY_HEADING, so he turns rather than snapping, and
+            // only while he is actually aiming or painting -- forcing it the rest of the time
+            // would fight every step he takes.
+            if (aiming || spraying) FaceTheAim();
+
             if (spraying == _spraying && Playing()) return;
 
             _spraying = spraying;
             Play(spraying ? Spray : Idle);
+        }
+
+        /// <summary>Turns him to look where the camera is looking.</summary>
+        private static void FaceTheAim()
+        {
+            try
+            {
+                var me = Game.Player.Character;
+                if (me == null || !me.Exists()) return;
+
+                var dir = GameplayCamera.Direction;
+
+                // Heading is degrees about the vertical, zero pointing north (+Y), and it
+                // increases the other way round from atan2 -- hence the negated X.
+                var heading = (float)(Math.Atan2(-dir.X, dir.Y) * 180d / Math.PI);
+
+                Function.Call(Hash.SET_PED_DESIRED_HEADING, me.Handle, heading);
+            }
+            catch
+            {
+                // He keeps facing wherever he was. Nothing else depends on it.
+            }
         }
 
         /// <summary>Whether the tagging clip is still running, since anything can interrupt it.</summary>
@@ -171,7 +218,7 @@ namespace Overspray.Paint
                     var bone = Function.Call<int>(Hash.GET_PED_BONE_INDEX, me.Handle, RightHand);
 
                     Function.Call(Hash.ATTACH_ENTITY_TO_ENTITY, _can.Handle, me.Handle, bone,
-                                  0f, 0.01f, 0.02f,
+                                  0f, 0f, 0.012f,
                                   0f, 0f, 0f,
                                   false, false, false, false, 2, true);
 

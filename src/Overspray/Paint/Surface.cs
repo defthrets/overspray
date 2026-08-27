@@ -14,6 +14,9 @@ namespace Overspray.Paint
         /// <summary>Straight out of the surface. This is the whole reason any of it works.</summary>
         public Vector3 Normal;
 
+        /// <summary>How far the wall is from the PLAYER. See InFront.</summary>
+        public float Away;
+
         public int Entity;
     }
 
@@ -62,8 +65,25 @@ namespace Overspray.Paint
                 var cam = GameplayCamera.Position;
                 var dir = GameplayCamera.Direction;
 
+                // THE REACH IS FROM THE MAN, NOT FROM THE CAMERA, and that is what was
+                // wrong. The ray has to START at the camera, or the paint does not land where
+                // the reticle is -- but in third person the camera sits two or three metres
+                // BEHIND him, so a four-metre can spent most of its range getting back to his
+                // own shoulder and had about a metre left in front of him. Standing a normal
+                // distance off a wall there was simply nothing inside the probe, and a probe
+                // that hits nothing is indistinguishable from paint that does not work.
+                //
+                // So the camera's own distance is added back on. The tag run in the other mod
+                // casts from the player for this exact reason; this keeps the reticle honest
+                // AND gives the advertised reach.
+                var me2 = Game.Player.Character;
+
+                var lead = me2 != null && me2.Exists()
+                    ? me2.Position.DistanceTo(cam)
+                    : 0f;
+
                 var from = cam;
-                var to = cam + dir * metres;
+                var to = cam + dir * (metres + lead);
 
                 var me = Game.Player.Character;
                 var ignore = me == null || !me.Exists() ? 0 : me.Handle;
@@ -83,6 +103,13 @@ namespace Overspray.Paint
 
                 hit.Landed = true;
                 hit.At = end.GetResult<Vector3>();
+
+                // How far it is from HIM, for the same reason. The splatter grows with
+                // distance, and measuring that from the camera made every mark two or three
+                // metres' worth too big -- point blank came out the size of arm's length.
+                hit.Away = me2 != null && me2.Exists()
+                    ? me2.Position.DistanceTo(hit.At)
+                    : cam.DistanceTo(hit.At);
                 hit.Normal = normal.GetResult<Vector3>();
                 hit.Entity = entity.GetResult<int>();
             }

@@ -106,7 +106,7 @@ namespace Overspray
                 // The look, over the top of all of it. Reads the sprayer rather than the
                 // trigger so the animation and the paint can never disagree about whether he
                 // is spraying -- one of them is the source and the other follows.
-                _spraycan.Update(_sprayer.Spraying);
+                _spraycan.Update(_sprayer.Spraying, UI.Reticle.Aiming());
 
                 Badge();
 
