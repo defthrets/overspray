@@ -135,7 +135,7 @@ namespace Overspray.Paint
         /// <summary>One splatter, wherever the spray is pointing.</summary>
         private void Dab()
         {
-            var hit = Surface.InFront(_cfg.Range);
+            var hit = Surface.InFront(_cfg.LiveRange);
             if (!hit.Landed) return;
 
             // OFF THE SURFACE BY A HAIR. A decal placed exactly on the geometry fights it for
@@ -156,16 +156,16 @@ namespace Overspray.Paint
             // opens out as it loses it, so the far half widens faster than the near half.
             var away = GameplayCamera.Position.DistanceTo(hit.At);
 
-            var size = _cfg.SizeAtOneMetre *
-                       (float)Math.Pow(Math.Max(0.2f, away), _cfg.SpreadPower) *
+            var size = _cfg.LiveSizeAtOneMetre *
+                       (float)Math.Pow(Math.Max(0.2f, away), _cfg.LiveSpreadPower) *
                        Scale;
 
             // A little variation, or a held trigger paints one splatter repeatedly in place and
             // reads as a decal rather than as spray.
             size *= 0.85f + (float)_rng.NextDouble() * 0.3f;
 
-            if (size < _cfg.MinSize) size = _cfg.MinSize;
-            if (size > _cfg.MaxSize) size = _cfg.MaxSize;
+            if (size < _cfg.LiveMinSize) size = _cfg.LiveMinSize;
+            if (size > _cfg.LiveMaxSize) size = _cfg.LiveMaxSize;
 
             _marks.Put(at, into, side, size,
                        Colour.R / 255f, Colour.G / 255f, Colour.B / 255f);

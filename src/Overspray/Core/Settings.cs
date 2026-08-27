@@ -99,6 +99,43 @@ namespace Overspray.Core
         /// </summary>
         public bool SprayCanLook = true;
 
+        /// <summary>
+        /// The can's own reach and cone, which are NOT the extinguisher's.
+        ///
+        /// A can is worked a foot or two from the wall; an extinguisher is a pressure vessel
+        /// you stand back from. One shared curve makes one of the two wrong -- either the can
+        /// throws paint four metres like a hose, or the hose dabs like a can.
+        ///
+        /// Same straight line in both cases, because width proportional to distance is what a
+        /// cone geometrically is. Only the slope and the ends differ:
+        ///
+        ///     0.4m and nearer  ->  0.10m   (the floor)
+        ///     1m               ->  0.25m
+        ///     2m               ->  0.50m
+        ///     4m               ->  1.00m   (and it stops there)
+        ///
+        /// Past four metres there is nothing: a can that reaches across a street is the tell
+        /// that it is a repainted fire extinguisher.
+        /// </summary>
+        public float CanRange = 4f;
+        public float CanSizeAtOneMetre = 0.25f;
+        public float CanSpreadPower = 1f;
+        public float CanMinSize = 0.10f;
+        public float CanMaxSize = 1.00f;
+
+        /// <summary>
+        /// Whichever tool is actually in his hand.
+        ///
+        /// The sprayer reads these and never the underlying pair, so there is exactly one
+        /// place that knows which of the two sets is live and no chance of the reach coming
+        /// from one tool and the cone from the other.
+        /// </summary>
+        public float LiveRange => SprayCanLook ? CanRange : Range;
+        public float LiveSizeAtOneMetre => SprayCanLook ? CanSizeAtOneMetre : SizeAtOneMetre;
+        public float LiveSpreadPower => SprayCanLook ? CanSpreadPower : SpreadPower;
+        public float LiveMinSize => SprayCanLook ? CanMinSize : MinSize;
+        public float LiveMaxSize => SprayCanLook ? CanMaxSize : MaxSize;
+
         /// <summary>Whether paint survives a reload.</summary>
         public bool Persist = true;
 
@@ -132,7 +169,14 @@ namespace Overspray.Core
                 s.SprayCanLook = ini.GetBool("Paint", "SprayCanLook", s.SprayCanLook);
                 s.PaintEnabled = ini.GetBool("Paint", "PaintEnabled", s.PaintEnabled);
 
+                s.CanRange = Clamp(ini.GetFloat("Paint", "CanRange", s.CanRange), 1f, 20f);
+                s.CanSizeAtOneMetre = Clamp(ini.GetFloat("Paint", "CanSizeAtOneMetre", s.CanSizeAtOneMetre), 0.01f, 2f);
+                s.CanSpreadPower = Clamp(ini.GetFloat("Paint", "CanSpreadPower", s.CanSpreadPower), 0.5f, 3f);
+                s.CanMinSize = Clamp(ini.GetFloat("Paint", "CanMinSize", s.CanMinSize), 0.02f, 3f);
+                s.CanMaxSize = Clamp(ini.GetFloat("Paint", "CanMaxSize", s.CanMaxSize), 0.05f, 8f);
+
                 if (s.MaxSize < s.MinSize) s.MaxSize = s.MinSize;
+                if (s.CanMaxSize < s.CanMinSize) s.CanMaxSize = s.CanMinSize;
             }
             catch (Exception ex)
             {
