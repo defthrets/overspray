@@ -100,5 +100,14 @@ namespace Overspray.Core
         public static string Ini => Path.Combine(Scripts, "Overspray.ini");
         public static string LogFile => Path.Combine(Writable, "Overspray.log");
         public static string SaveFile => Path.Combine(Writable, "paint.json");
+
+        /// <summary>
+        /// The wordmark and the can.
+        ///
+        /// Beside the log and the save rather than loose in scripts\, because they belong to
+        /// this mod and a folder full of other people's DLLs is not a place to leave two PNGs
+        /// called logo and can.
+        /// </summary>
+        public static string Icons => Path.Combine(Writable, "icons");
     }
 }

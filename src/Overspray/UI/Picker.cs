@@ -24,6 +24,21 @@ namespace Overspray.UI
         private const float SwatchH = 0.075f;
         private const float ButtonH = 0.044f;
 
+        /// <summary>The mark and the can, and the shape of the files behind them.</summary>
+        private const float LogoH = 0.034f;
+        private const float LogoAspect = 4.62f;
+        private const float CanH = 0.060f;
+        private const float CanAspect = 0.4412f;
+
+        /// <summary>How the panel arrives.</summary>
+        private const int OpenMs = 200;
+
+        /// <summary>How long a shake lasts, how hard, and roughly how often.</summary>
+        private const int ShakeMs = 900;
+        private const int ShakeSpreadMs = 3500;
+        private const float ShakeDegrees = 13f;
+        private const double ShakeCycles = 4.0;
+
         private static readonly Color Ink = Color.FromArgb(255, 236, 236, 236);
         private static readonly Color Dim = Color.FromArgb(255, 132, 132, 132);
         private static readonly Color Back = Color.FromArgb(238, 12, 12, 12);
@@ -76,9 +91,14 @@ namespace Overspray.UI
         private readonly Paint.PaintConfig _cfg;
         private readonly Paint.Marks _marks;
 
+        private readonly Random _rng = new Random();
+
         private int _pick = 3;
         private Row _row = Row.Swatches;
         private int _openedAt;
+
+        private int _shakeFrom = int.MinValue / 2;
+        private int _nextShake;
 
         /// <summary>
         /// Whether the clear button has been pressed once already.
@@ -288,23 +308,55 @@ namespace Overspray.UI
             if (!IsOpen) return;
 
             var w = Hud.X(0.45f);
-            var h = Pad * 2f + 0.040f + SwatchH + 0.020f + ButtonH * 4f + 0.024f + 0.030f;
+            var h = Pad * 2f + LogoH + 0.008f + CanH + 0.014f + SwatchH + 0.020f
+                    + ButtonH * 4f + 0.024f + 0.030f;
 
             var left = 0.5f - w * 0.5f;
-            var top = 0.5f - h * 0.5f;
 
-            Hud.Box(left, top, w, h, Back);
-            // Legible, not raw: a black stripe on a black panel is a missing stripe.
-            Hud.Box(left, top, w, 0.0035f, Hud.Legible(Colour));
+            // ---- arriving ----
+            //
+            // Eased rather than linear, and it moves as well as fades. A panel that only
+            // fades looks like a rendering glitch resolving; one that rises the last few
+            // millimetres into place reads as a thing being put in front of you. Cubic
+            // ease-out because the useful part of a 200ms move is the beginning.
+            var age = Game.GameTime - _openedAt;
+            var in01 = age >= OpenMs ? 1f : age / (float)OpenMs;
+            var eased = 1f - (1f - in01) * (1f - in01) * (1f - in01);
+
+            var top = 0.5f - h * 0.5f + (1f - eased) * 0.030f;
+
+            Hud.Box(left, top, w, h, Hud.Fade(Back, eased));
+            Hud.Box(left, top, w, 0.0035f, Hud.Fade(Hud.Legible(Colour), eased));
 
             var x = left + Hud.X(Pad);
             var inner = w - Hud.X(Pad) * 2f;
             var y = top + Pad;
 
-            Hud.Text("OVERSPRAY", x, y, 0.42f, Ink);
-            Hud.TextRight(Names[_pick], x + inner, y + 0.004f, 0.34f, Hud.Legible(Colour));
+            var ink = Hud.Fade(Ink, eased);
+            var dim = Hud.Fade(Dim, eased);
+            var live = Hud.Fade(Hud.Legible(Colour), eased);
 
-            y += 0.040f;
+            // ---- the mark ----
+            //
+            // Drawn from a file so it can be a real wordmark rather than the word typed in a
+            // game font, and tinted at draw time -- which is why one white PNG serves all
+            // eleven colours. Falls back to the typed word if the art is missing, because a
+            // panel with a hole where its name should be is worse than a plain heading.
+            var logoW = Hud.X(LogoH) * LogoAspect;
+
+            if (!Hud.Picture("logo.png", left + w * 0.5f, y + LogoH * 0.5f, logoW, LogoH, 0f, ink))
+            {
+                Hud.Text("OVERSPRAY", x, y, 0.42f, ink, centre: false);
+            }
+
+            Hud.TextRight(Names[_pick], x + inner, y + 0.004f, 0.34f, live);
+
+            y += LogoH + 0.008f;
+
+            // ---- the can, having a shake ----
+            Can(left + w * 0.5f, y, eased);
+
+            y += CanH + 0.014f;
 
             // ---- the ten ----
             var gap = Hud.X(0.005f);
@@ -326,7 +378,7 @@ namespace Overspray.UI
                 var sh = on ? SwatchH : SwatchH - 0.014f;
                 var sy = y + (SwatchH - sh);
 
-                Hud.Box(sx, sy, each, sh, Colours[i]);
+                Hud.Box(sx, sy, each, sh, Hud.Fade(Colours[i], eased));
 
                 // A near-black swatch on a near-black panel is an empty slot rather than a
                 // colour, so the outline brightens as the swatch darkens -- the border is the
@@ -336,8 +388,15 @@ namespace Overspray.UI
 
                 if (on)
                 {
+                    // A slow breath on the ring while the cursor is actually on this row.
+                    // Small on purpose -- it should catch the eye of somebody looking for the
+                    // selection, not pull it away from somebody reading a button.
+                    var beat = focused
+                        ? 0.78f + 0.22f * (float)Math.Sin(Game.GameTime / 260.0)
+                        : 1f;
+
                     Hud.Frame(sx - 0.0022f, sy - 0.0022f, each + 0.0044f, sh + 0.0044f, 0.0026f,
-                              focused ? Ink : Dim);
+                              Hud.Fade(focused ? Ink : Dim, eased * beat));
                 }
             }
 
@@ -352,14 +411,14 @@ namespace Overspray.UI
             Button(x, y, inner, _row == Row.TakeCan,
                    "TAKE A SPRAY CAN",
                    has && _cfg.SprayCanLook ? "IN HAND" : "ENTER",
-                   Ink, Hud.Legible(Colour));
+                   ink, live, eased);
 
             y += ButtonH + 0.008f;
 
             Button(x, y, inner, _row == Row.TakeExt,
                    "TAKE AN EXTINGUISHER",
                    has && !_cfg.SprayCanLook ? "IN HAND" : "ENTER",
-                   Ink, Hud.Legible(Colour));
+                   ink, live, eased);
 
             y += ButtonH + 0.008f;
 
@@ -379,8 +438,8 @@ namespace Overspray.UI
                            ? "SPRAY PAINT  --  OFF, POSTED UP HAS IT ON THE PHONE"
                            : "SPRAY PAINT  --  OFF",
                    _cfg.PaintEnabled ? "ON" : "OFF",
-                   Ink,
-                   _cfg.PaintEnabled ? Hud.Legible(Colour) : Warn);
+                   ink,
+                   Hud.Fade(_cfg.PaintEnabled ? Hud.Legible(Colour) : Warn, eased), eased);
 
             y += ButtonH + 0.008f;
 
@@ -392,28 +451,103 @@ namespace Overspray.UI
                        ? "PRESS AGAIN -- THIS CANNOT BE UNDONE"
                        : "CLEAR EVERY WALL" + (marks > 0 ? "  (" + marks + ")" : ""),
                    _armed ? "SURE?" : "ENTER",
-                   _armed ? Warn : Ink,
-                   _armed ? Warn : Hud.Legible(Colour));
+                   Hud.Fade(_armed ? Warn : Ink, eased),
+                   Hud.Fade(_armed ? Warn : Hud.Legible(Colour), eased), eased);
 
             Hud.Text("ARROWS  move      ENTER  choose      BACKSPACE  close",
-                     x, top + h - 0.024f, 0.27f, Dim);
+                     x, top + h - 0.024f, 0.27f, dim);
+        }
+
+        /// <summary>
+        /// The can under the mark, shaking every few seconds.
+        ///
+        /// THE SAME HABIT HE HAS IN THE WORLD. He shakes the can now and then while he is
+        /// holding it, and this does the same on the same sort of interval -- so the panel is
+        /// showing you the tool rather than decorating itself.
+        ///
+        /// A damped oscillation rather than a plain sine: it starts hard, rattles, and settles,
+        /// which is what shaking a can looks like. A constant-amplitude wobble reads as a
+        /// broken transform.
+        /// </summary>
+        private void Can(float cx, float top, float fade)
+        {
+            var now = Game.GameTime;
+
+            if (now >= _nextShake)
+            {
+                _shakeFrom = now;
+                _nextShake = now + ShakeMs + _rng.Next(ShakeSpreadMs);
+            }
+
+            var t = (now - _shakeFrom) / (float)ShakeMs;
+
+            var spin = 0f;
+            var bob = 0f;
+
+            if (t < 1f)
+            {
+                // Falls away as it goes, so the last shake of a burst is the gentlest.
+                var decay = 1f - t;
+                decay *= decay;
+
+                var wave = (float)Math.Sin(t * Math.PI * 2.0 * ShakeCycles);
+
+                spin = wave * ShakeDegrees * decay;
+
+                // Half the frequency on the bob, or it reads as buzzing rather than shaking.
+                bob = (float)Math.Sin(t * Math.PI * 2.0 * ShakeCycles * 0.5) * 0.0035f * decay;
+            }
+
+            var canW = Hud.X(CanH) * CanAspect;
+
+            if (!Hud.Picture("can.png", cx, top + CanH * 0.5f + bob, canW, CanH, spin,
+                             Hud.Fade(Hud.Legible(Colour), fade)))
+            {
+                return;
+            }
+
+            // A shadow under it, squashed by the bob, so it is standing on the panel rather
+            // than floating over it. Cheap, and it is the difference between a sprite and an
+            // object.
+            var lift = 1f - bob / 0.0035f * 0.35f;
+
+            Hud.Box(cx - canW * 0.30f * lift, top + CanH + 0.002f,
+                    canW * 0.60f * lift, 0.0022f,
+                    Hud.Fade(Color.FromArgb(90, 0, 0, 0), fade));
         }
 
         private void Button(float x, float y, float w, bool active, string label, string hint,
-                            Color labelOn, Color hintColour)
+                            Color labelOn, Color hintColour, float fade)
         {
             Hud.Box(x, y, w, ButtonH,
-                    active ? Color.FromArgb(255, 42, 42, 42) : Color.FromArgb(255, 24, 24, 24));
+                    Hud.Fade(active ? Color.FromArgb(255, 42, 42, 42)
+                                    : Color.FromArgb(255, 24, 24, 24), fade));
 
-            if (active) Hud.Frame(x, y, w, ButtonH, 0.0026f, labelOn);
+            if (active)
+            {
+                Hud.Frame(x, y, w, ButtonH, 0.0026f, labelOn);
 
-            Hud.Text(label, x + Hud.X(0.014f), y + 0.011f, 0.35f, active ? labelOn : Dim);
+                // A sheen travelling along the highlighted row, and only that one. It says
+                // "this is the live line" without another colour or another border, and it
+                // stops the panel looking frozen while you read it.
+                var t = (Game.GameTime % 1600) / 1600f;
+                var band = w * 0.22f;
+                var at = x - band + (w + band * 2f) * t;
+
+                var a = Math.Max(x, at);
+                var b = Math.Min(x + w, at + band);
+
+                if (b > a) Hud.Box(a, y, b - a, ButtonH, Hud.Fade(Color.FromArgb(26, 255, 255, 255), fade));
+            }
+
+            Hud.Text(label, x + Hud.X(0.014f), y + 0.011f, 0.35f,
+                     active ? labelOn : Hud.Fade(Dim, fade));
 
             // Ends at the button's inner edge whatever the word is. The old version started it
             // a fixed distance in from the right, which is a measurement of the word "ENTER"
             // dressed up as a layout rule -- "SPRAY CAN" is wider and went out through the side.
             Hud.TextRight(hint, x + w - Hud.X(0.014f), y + 0.012f, 0.30f,
-                          active ? hintColour : Dim);
+                          active ? hintColour : Hud.Fade(Dim, fade));
         }
 
         // ---- input -------------------------------------------------------------

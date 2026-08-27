@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using GTA;
 using GTA.Native;
+using Overspray.Core;
 
 namespace Overspray.UI
 {
@@ -142,6 +144,101 @@ namespace Overspray.UI
                                   (int)(c.R + (255 - c.R) * t),
                                   (int)(c.G + (255 - c.G) * t),
                                   (int)(c.B + (255 - c.B) * t));
+        }
+
+        /// <summary>
+        /// The scaled draw space CustomSprite.ScaledDraw works in.
+        ///
+        /// 720, which is ScriptHookVDotNet's number and not a guess -- positions handed to a
+        /// scaled draw are in this space, not in the 0..1 one everything else here uses.
+        /// </summary>
+        private const float ScaledHeight = 720f;
+
+        private static readonly Dictionary<string, GTA.UI.CustomSprite> Pictures =
+            new Dictionary<string, GTA.UI.CustomSprite>();
+
+        /// <summary>
+        /// A PNG off disk, once.
+        /// </summary>
+        private static GTA.UI.CustomSprite Load(string file)
+        {
+            GTA.UI.CustomSprite found;
+
+            // The null is cached too. A missing file must be a miss ONCE, not a failed disk
+            // hit and a log line every frame for the rest of the session.
+            if (Pictures.TryGetValue(file, out found)) return found;
+
+            Pictures[file] = null;
+
+            try
+            {
+                var path = System.IO.Path.Combine(Paths.Icons, file);
+
+                if (!System.IO.File.Exists(path))
+                {
+                    Log.Info("No art at " + path + "; drawing without it.");
+                    return null;
+                }
+
+                found = new GTA.UI.CustomSprite(path, new SizeF(32f, 32f), new PointF(0f, 0f),
+                                                Color.White, 0f, true);
+
+                Pictures[file] = found;
+                Log.Info("Art loaded: " + file + ".");
+
+                return found;
+            }
+            catch (Exception ex)
+            {
+                Log.Info("Art '" + file + "' would not load: " + ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// A picture, by its CENTRE, tinted, optionally turned.
+        ///
+        /// White-on-transparent art tinted at draw time, which is why one logo file serves
+        /// every colour in the picker instead of eleven of them.
+        ///
+        /// Returns false when there is nothing to draw, so the caller can fall back to text
+        /// rather than leaving a hole where the mark should be.
+        /// </summary>
+        public static bool Picture(string file, float cx, float cy, float w, float h,
+                                   float spin, Color c)
+        {
+            var sprite = Load(file);
+            if (sprite == null) return false;
+
+            try
+            {
+                var wide = w * GTA.UI.Screen.ScaledWidth;
+                var tall = h * ScaledHeight;
+
+                if (wide < 1f || tall < 1f) return false;
+
+                sprite.Size = new SizeF(wide, tall);
+                sprite.Position = new PointF(cx * GTA.UI.Screen.ScaledWidth, cy * ScaledHeight);
+                sprite.Color = c;
+                sprite.Rotation = spin;
+
+                sprite.ScaledDraw();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("Art '" + file + "' would not draw: " + ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>The same colour at a different alpha, for fades.</summary>
+        public static Color Fade(Color c, float t)
+        {
+            if (t <= 0f) return Color.FromArgb(0, c.R, c.G, c.B);
+            if (t >= 1f) return c;
+
+            return Color.FromArgb((int)(c.A * t), c.R, c.G, c.B);
         }
 
         /// <summary>

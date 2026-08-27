@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Builds Overspray and, optionally, drops it into GTA V.
 
@@ -146,6 +146,33 @@ function Deploy-To([string]$dir, [string]$label) {
             Copy-Item $iniSrc $iniDst
             Write-Host "  new    Overspray.ini" -ForegroundColor Green
         }
+    }
+
+    # --- art -----------------------------------------------------------------
+    #
+    # Always overwritten, unlike the ini. Nobody hand-edits a PNG in place, and a stale
+    # wordmark from three builds ago is a bug that looks like a rendering fault.
+    $artSrc = Join-Path $root 'data\icons'
+    $artDst = Join-Path $scripts 'Overspray\icons'
+
+    if (Test-Path $artSrc) {
+        New-Item -ItemType Directory -Force $artDst | Out-Null
+
+        $n = 0
+        foreach ($f in Get-ChildItem $artSrc -Filter *.png) {
+            $to = Join-Path $artDst $f.Name
+
+            # Only when it actually differs, so a deploy that changed no art says so rather
+            # than printing a list of files every time.
+            if ((Test-Path $to) -and (Get-Item $to).Length -eq $f.Length -and
+                (Get-FileHash $to).Hash -eq (Get-FileHash $f.FullName).Hash) { continue }
+
+            Copy-Item $f.FullName $to -Force
+            $n++
+        }
+
+        if ($n -gt 0) { Write-Host "  art    $n file(s)" -ForegroundColor Green }
+        else          { Write-Host "  art    up to date" -ForegroundColor DarkGray }
     }
 
     Write-Host "  ok     $label" -ForegroundColor Green
