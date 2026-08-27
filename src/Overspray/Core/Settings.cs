@@ -89,6 +89,16 @@ namespace Overspray.Core
         /// <summary>Whether the can takes the nearest of the game's eight weapon tints.</summary>
         public bool TintTheCan = true;
 
+        /// <summary>
+        /// Whether he holds a spray can instead of an extinguisher.
+        ///
+        /// A LOOK, NOT A MODE. The extinguisher is still the weapon underneath either way --
+        /// see Paint/Spraycan.cs for why that is the right way round -- so this changes what is
+        /// in his hand and what his arms do and touches nothing about where the paint lands.
+        /// Both settle to the same splatter on the same wall.
+        /// </summary>
+        public bool SprayCanLook = true;
+
         /// <summary>Whether paint survives a reload.</summary>
         public bool Persist = true;
 
@@ -119,6 +129,7 @@ namespace Overspray.Core
 
                 s.ColourTheSmoke = ini.GetBool("Paint", "ColourTheSmoke", s.ColourTheSmoke);
                 s.TintTheCan = ini.GetBool("Paint", "TintTheCan", s.TintTheCan);
+                s.SprayCanLook = ini.GetBool("Paint", "SprayCanLook", s.SprayCanLook);
                 s.PaintEnabled = ini.GetBool("Paint", "PaintEnabled", s.PaintEnabled);
 
                 if (s.MaxSize < s.MinSize) s.MaxSize = s.MinSize;

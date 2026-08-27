@@ -25,6 +25,7 @@ namespace Overspray
         private readonly Sprayer _sprayer;
         private readonly Picker _picker;
         private readonly Can _can;
+        private readonly Spraycan _spraycan;
 
         private int _lastSave;
         private bool _parked;
@@ -43,6 +44,7 @@ namespace Overspray
                 _sprayer = new Sprayer(_cfg, _marks);
                 _picker = new Picker(_cfg, _marks);
                 _can = new Can();
+                _spraycan = new Spraycan(_cfg);
 
 
                 if (_cfg.Persist) Load();
@@ -88,6 +90,11 @@ namespace Overspray
                 // an extinguisher that stays hot pink after you switch paint off is a mod
                 // leaving its fingerprints on somebody else's weapon.
                 if (_cfg.TintTheCan) _can.Match(_picker.Colour, _cfg.PaintEnabled);
+
+                // The look, over the top of all of it. Reads the sprayer rather than the
+                // trigger so the animation and the paint can never disagree about whether he
+                // is spraying -- one of them is the source and the other follows.
+                _spraycan.Update(_sprayer.Spraying);
 
                 Badge();
 
@@ -146,6 +153,10 @@ namespace Overspray
             try
             {
                 if (_sprayer != null) _sprayer.Stop();
+
+                // Before anything else: this puts the weapon model back and takes the prop off
+                // his hand, and leaving either behind outlives the mod.
+                if (_spraycan != null) _spraycan.Away();
 
                 // Saved BEFORE the decals come off, or the record is written after the thing it
                 // is a record of has been taken down.

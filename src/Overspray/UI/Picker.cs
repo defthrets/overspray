@@ -56,7 +56,7 @@ namespace Overspray.UI
             "cyan", "blue", "purple", "pink", "white"
         };
 
-        private enum Row { Swatches, Take, Clear }
+        private enum Row { Swatches, Take, Look, Clear }
 
         private readonly Settings _cfg;
         private readonly Paint.Marks _marks;
@@ -149,6 +149,11 @@ namespace Overspray.UI
                     Hud.Sound("SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET");
                     break;
 
+                case Row.Look:
+                    _cfg.SprayCanLook = !_cfg.SprayCanLook;
+                    Hud.Sound("SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET");
+                    break;
+
                 case Row.Clear:
                     if (!_armed)
                     {
@@ -169,8 +174,8 @@ namespace Overspray.UI
         private void Move(int by)
         {
             var n = (int)_row + by;
-            if (n < 0) n = 2;
-            if (n > 2) n = 0;
+            if (n < 0) n = 3;
+            if (n > 3) n = 0;
 
             _row = (Row)n;
 
@@ -191,7 +196,7 @@ namespace Overspray.UI
             if (!IsOpen) return;
 
             var w = Hud.X(0.42f);
-            var h = Pad * 2f + 0.040f + SwatchH + 0.020f + ButtonH * 2f + 0.008f + 0.030f;
+            var h = Pad * 2f + 0.040f + SwatchH + 0.020f + ButtonH * 3f + 0.016f + 0.030f;
 
             var left = 0.5f - w * 0.5f;
             var top = 0.5f - h * 0.5f;
@@ -236,6 +241,16 @@ namespace Overspray.UI
             Button(x, y, inner, _row == Row.Take,
                    has ? "TAKE ANOTHER EXTINGUISHER" : "TAKE AN EXTINGUISHER",
                    "ENTER", Ink, Colour);
+
+            y += ButtonH + 0.008f;
+
+            // ---- what he holds ----
+            //
+            // Named by what you get rather than by the setting behind it. "SprayCanLook: on"
+            // is a variable; "SPRAY CAN" is the thing in his hand.
+            Button(x, y, inner, _row == Row.Look,
+                   "IN HIS HAND", _cfg.SprayCanLook ? "SPRAY CAN" : "EXTINGUISHER",
+                   Ink, Colour);
 
             y += ButtonH + 0.008f;
 
