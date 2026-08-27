@@ -29,15 +29,31 @@ namespace Overspray.Paint
         /// <summary>
         /// The plume, tinted.
         ///
-        /// core is the always-loaded asset dictionary, and ent_amb_smoke_foundry is a slow pale
-        /// smoke that takes a colour cleanly. It goes on TOP of the extinguisher's own white
-        /// spray rather than replacing it -- the weapon's effect is defined in its meta and
-        /// script cannot recolour it. Whether that reads as coloured smoke or as two effects
-        /// fighting is the one thing in this mod that has to be looked at rather than reasoned
-        /// about, which is why it is a setting.
+        /// scr_lamgraff_paint_spray IS ROCKSTAR OWN PAINT SPRAY. It is the effect their
+        /// graffiti scene uses -- player_scene_f_lamgraff starts it looped and then calls
+        /// SET_PARTICLE_FX_LOOPED_COLOUR on it, which is exactly what this mod wants to do and
+        /// is proof it takes an arbitrary colour rather than merely tolerating one.
+        ///
+        /// Found by pulling every ptfx name out of the decompiled script set rather than
+        /// guessed, which matters more here than usual: a particle name a build does not have
+        /// plays as silence, and silence is indistinguishable from the feature not working.
+        ///
+        /// THE FIRE TRUCK WATER JET IS NOT IN THAT LIST. Nothing in the entire decompiled set
+        /// names a water-cannon effect, which is what you would expect of something driven by a
+        /// vehicle weapon rather than by a script -- there is no name for a script to ask for.
+        /// A paint spray is the better answer regardless: right shape, already built to be told
+        /// what colour to be, and it is what the game itself reaches for when somebody paints
+        /// a wall.
+        ///
+        /// The smoke stays behind it as a fallback, so if the spray will not start on some
+        /// install something coloured still comes out of the nozzle.
         /// </summary>
-        private const string FxAsset = "core";
-        private const string FxName = "ent_amb_smoke_foundry";
+        private static readonly string[][] Plumes =
+        {
+            new[] { "core", "scr_lamgraff_paint_spray" },
+            new[] { "scr_lamgraff", "scr_lamgraff_paint_spray" },
+            new[] { "core", "ent_amb_smoke_foundry" }
+        };
 
         private readonly Settings _cfg;
         private readonly Marks _marks;
@@ -159,6 +175,9 @@ namespace Overspray.Paint
 
         // ---- the plume ---------------------------------------------------------
 
+        /// <summary>Which of the three took, so every press after the first costs one call.</summary>
+        private int _plume = -1;
+
         private void StartPlume()
         {
             if (!_cfg.ColourTheSmoke) return;
@@ -168,30 +187,68 @@ namespace Overspray.Paint
                 var me = Game.Player.Character;
                 if (me == null || !me.Exists()) return;
 
-                if (!Function.Call<bool>(Hash.HAS_NAMED_PTFX_ASSET_LOADED, FxAsset))
+                var r = Colour.R / 255f;
+                var g = Colour.G / 255f;
+                var b = Colour.B / 255f;
+
+                // ON THE WEAPON, NOT THE WRIST.
+                //
+                // The whole point of a visible jet is that the paint lands where you watched it
+                // land, so the effect has to leave the nozzle and point where the nozzle points.
+                // Hung off the hand bone it comes out of his forearm at whatever angle the
+                // animation has, and then the plume and the paint disagree by a few degrees --
+                // which at five metres is most of a wall.
+                //
+                // Falls back to the hand when the weapon object cannot be had, which is the
+                // case for a frame or two around drawing it.
+                var gun = Function.Call<int>(Hash.GET_CURRENT_PED_WEAPON_ENTITY_INDEX, me.Handle, 0);
+
+                for (var i = 0; i < Plumes.Length; i++)
                 {
-                    Function.Call(Hash.REQUEST_NAMED_PTFX_ASSET, FxAsset);
-                    return;   // next press, once it is in
+                    if (_plume >= 0 && i != _plume) continue;
+
+                    var asset = Plumes[i][0];
+                    var name = Plumes[i][1];
+
+                    if (!Function.Call<bool>(Hash.HAS_NAMED_PTFX_ASSET_LOADED, asset))
+                    {
+                        Function.Call(Hash.REQUEST_NAMED_PTFX_ASSET, asset);
+                        continue;   // next press, once it has streamed in
+                    }
+
+                    Function.Call(Hash.USE_PARTICLE_FX_ASSET, asset);
+                    Function.Call(Hash.SET_PARTICLE_FX_NON_LOOPED_COLOUR, r, g, b);
+
+                    if (gun != 0)
+                    {
+                        _fx = Function.Call<int>(Hash.START_PARTICLE_FX_LOOPED_ON_ENTITY,
+                                                 name, gun,
+                                                 0f, 0.15f, 0f,
+                                                 0f, 0f, 0f,
+                                                 1.1f, false, false, false);
+                    }
+                    else
+                    {
+                        _fx = Function.Call<int>(Hash.START_PARTICLE_FX_LOOPED_ON_ENTITY_BONE,
+                                                 name, me.Handle,
+                                                 0.3f, 0.1f, 0f,
+                                                 0f, 0f, 0f,
+                                                 28422, 1.1f, false, false, false);
+                    }
+
+                    if (_fx == 0) { _fx = -1; continue; }
+
+                    Function.Call(Hash.SET_PARTICLE_FX_LOOPED_COLOUR, _fx, r, g, b, false);
+                    Function.Call(Hash.SET_PARTICLE_FX_LOOPED_ALPHA, _fx, 0.9f);
+
+                    if (_plume != i)
+                    {
+                        _plume = i;
+                        Log.Info("Plume: " + name + " out of " + asset + ".");
+                    }
+
+                    return;
                 }
-
-                Function.Call(Hash.USE_PARTICLE_FX_ASSET, FxAsset);
-
-                Function.Call(Hash.SET_PARTICLE_FX_NON_LOOPED_COLOUR,
-                              Colour.R / 255f, Colour.G / 255f, Colour.B / 255f);
-
-                // On the right hand, pushed forward so it leaves the nozzle rather than his
-                // wrist. Bone 28422 is SKEL_R_Hand -- the standard one every mod uses for a
-                // held-object effect.
-                _fx = Function.Call<int>(Hash.START_PARTICLE_FX_LOOPED_ON_ENTITY_BONE,
-                                         FxName, me.Handle,
-                                         0.35f, 0.1f, 0f,
-                                         0f, 0f, 0f,
-                                         28422, 0.7f, false, false, false);
-
-                if (_fx == 0) { _fx = -1; return; }
-
-                Function.Call(Hash.SET_PARTICLE_FX_LOOPED_COLOUR, _fx,
-                              Colour.R / 255f, Colour.G / 255f, Colour.B / 255f, false);
             }
             catch (Exception ex)
             {

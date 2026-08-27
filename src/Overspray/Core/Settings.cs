@@ -16,7 +16,7 @@ namespace Overspray.Core
         public bool Enabled = true;
 
         /// <summary>The picker key. The extinguisher does the rest.</summary>
-        public Keys MenuKey = Keys.F7;
+        public Keys MenuKey = Keys.F3;
 
         /// <summary>
         /// How far the paint carries.

@@ -12,7 +12,7 @@ you can write with; at four metres it blooms into something you cover a garage
 door with. That is the whole reason it reads as spray rather than as decals
 appearing one at a time.
 
-  F7   the only key. Opens the picker: choose a colour, and on the bottom row
+  F3   the only key. Opens the picker: choose a colour, and on the bottom row
        take an extinguisher.
 
 After that there is nothing to press. Aim and fire and it paints.
