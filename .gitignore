@@ -1,0 +1,13 @@
+# Build output
+build/
+bin/
+obj/
+
+# The compiler toolchain is shared with the hoodrich project and is ~174 MB.
+# build.ps1 finds it at ..\hoodrich\tools\ or takes -Tools <path>.
+tools/roslyn/
+tools/refasm/
+
+# Local runtime artefacts
+*.log
+*.user
