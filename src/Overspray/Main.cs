@@ -47,6 +47,23 @@ namespace Overspray
                 _spraycan = new Spraycan(_cfg.Paint);
 
 
+                // BEFORE ANYTHING ELSE TOUCHES THE WORLD. Two copies of one engine both
+                // painting is not a degraded experience, it is a different one -- and it is
+                // very hard to diagnose from inside the game, because everything looks like it
+                // works and merely looks wrong.
+                if (_cfg.StandDownForPostedUp &&
+                    System.IO.File.Exists(System.IO.Path.Combine(Paths.Scripts, "Hoodrich.dll")))
+                {
+                    _parked = true;
+
+                    Log.Warn("Posted Up is installed here and it has this built in as a " +
+                             "Graffiti app on the phone, running the same engine. Two copies " +
+                             "both paint -- two cans, two plumes and two decals for every one " +
+                             "you meant -- so this standalone has stood down. Use the phone " +
+                             "app, or set StandDownForPostedUp=false in the ini to run both.");
+                    return;
+                }
+
                 if (_cfg.Persist) Load();
 
                 Interval = 0;

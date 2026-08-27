@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows.Forms;
 using Overspray.Paint;
 
@@ -29,6 +29,20 @@ namespace Overspray.Core
         /// <summary>Whether paint survives a reload.</summary>
         public bool Persist = true;
 
+        /// <summary>
+        /// Whether to switch off when Posted Up is installed alongside.
+        ///
+        /// IT HAS THIS BUILT IN, as a Graffiti app on the phone, running THE SAME ENGINE --
+        /// literally the same files. With both installed both engines wake up, both watch the
+        /// same trigger, and both paint: two cans in his hand, two plumes stacked on top of
+        /// each other, and two decals for every one you meant. It looks like the effect is
+        /// twice as thick as it should be, because it is.
+        ///
+        /// The standalone is the one that gives way, because Posted Up is the bigger mod and
+        /// its version is the one with the phone app attached.
+        /// </summary>
+        public bool StandDownForPostedUp = true;
+
         /// <summary>Everything the engine reads. Shared, unchanged, with Posted Up.</summary>
         public readonly PaintConfig Paint = new PaintConfig();
 
@@ -44,6 +58,7 @@ namespace Overspray.Core
 
                 s.Enabled = ini.GetBool("General", "Enabled", s.Enabled);
                 s.Persist = ini.GetBool("General", "Persist", s.Persist);
+                s.StandDownForPostedUp = ini.GetBool("General", "StandDownForPostedUp", s.StandDownForPostedUp);
 
                 var key = ini.GetString("General", "MenuKey", s.MenuKey.ToString());
                 Keys parsed;
@@ -59,6 +74,9 @@ namespace Overspray.Core
                 p.MaxMarks = (int)Clamp(ini.GetFloat("Paint", "MaxMarks", p.MaxMarks), 16f, 10000f);
 
                 p.ColourTheSmoke = ini.GetBool("Paint", "ColourTheSmoke", p.ColourTheSmoke);
+                p.JetScale = Clamp(ini.GetFloat("Paint", "JetScale", p.JetScale), 0.05f, 4f);
+                p.CanJetScale = Clamp(ini.GetFloat("Paint", "CanJetScale", p.CanJetScale), 0.05f, 4f);
+                p.JetFollowsAim = ini.GetBool("Paint", "JetFollowsAim", p.JetFollowsAim);
                 p.TintTheCan = ini.GetBool("Paint", "TintTheCan", p.TintTheCan);
                 p.PaintEnabled = ini.GetBool("Paint", "PaintEnabled", p.PaintEnabled);
                 p.SprayCanLook = ini.GetBool("Paint", "SprayCanLook", p.SprayCanLook);
