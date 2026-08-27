@@ -153,6 +153,49 @@ def can():
     return Image.merge('RGBA', (Image.new('L', img.size, 255),) * 3 + (img,))
 
 
+def tile(_tin):
+    """
+    The can again, as a 64x64 app icon -- drawn fresh, not the masthead one shrunk.
+
+    TWO WRONG TURNS GOT HERE AND BOTH ARE WORTH KEEPING. First a real speckle cone off the
+    nozzle, the same trick that makes the wordmark work: fine at 128 pixels, a grey shard
+    stuck to a white blob at twenty. Then the tall can simply tilted and scaled down: the
+    slant thinned every stroke, and the punched-out label band ate the middle of an already
+    narrow body and turned it to mud.
+
+    So this is a SEPARATE SHAPE that happens to be the same object. Fatter, barely tilted,
+    no label, three bold dots with real gaps. Everything that survives twenty pixels and
+    nothing that does not -- an icon is read in about a tenth of a second, and at that size
+    detail is not detail, it is noise.
+    """
+    S = 512
+    img = Image.new('L', (S, S), 0)
+    d = ImageDraw.Draw(img)
+
+    def box(x0, y0, x1, y1, r):
+        d.rounded_rectangle((x0 * S, y0 * S, x1 * S, y1 * S), radius=r * S, fill=255)
+
+    # Deliberately chunkier than the real can. A faithful 0.44 aspect is a sliver in a square,
+    # and the tile's job is to be recognisable, not to be to scale.
+    box(0.10, 0.40, 0.44, 0.93, 0.05)      # body
+    box(0.07, 0.33, 0.47, 0.42, 0.02)      # rim, proud both sides
+    box(0.20, 0.24, 0.34, 0.35, 0.015)     # waist
+    box(0.13, 0.09, 0.41, 0.26, 0.04)      # cap
+
+    # Three, falling, with the gaps widening -- which is what reads as travel rather than as a
+    # row of buttons. Four was one too many; the last one always merged into its neighbour.
+    for fx, fy, r in ((0.60, 0.26, 0.085),
+                      (0.78, 0.17, 0.058),
+                      (0.92, 0.09, 0.034)):
+        cx, cy, rr = fx * S, fy * S, r * S
+        d.ellipse((cx - rr, cy - rr, cx + rr, cy + rr), fill=255)
+
+    img = img.rotate(-10, resample=Image.BICUBIC, center=(S * 0.28, S * 0.62))
+    img = img.resize((64, 64), Image.LANCZOS)
+
+    return Image.merge('RGBA', (Image.new('L', img.size, 255),) * 3 + (img,))
+
+
 def main():
     if not os.path.exists(FONT):
         raise SystemExit('no Impact at ' + FONT)
@@ -178,7 +221,12 @@ def main():
         g = wordmark('GRAFFITI')
         g.save(os.path.join(other, 'graffiti.png'))
         tin.save(os.path.join(other, 'spraycan.png'))
-        print('  hoodrich   graffiti.png %dx%d   spraycan.png %dx%d' % (g.size + tin.size))
+
+        app = tile(tin)
+        app.save(os.path.join(other, 'sprayapp.png'))
+
+        print('  hoodrich   graffiti.png %dx%d   spraycan.png %dx%d   sprayapp.png %dx%d'
+              % (g.size + tin.size + app.size))
         print('    graffiti aspect %.4f' % (g.size[0] / float(g.size[1])))
     else:
         print('  hoodrich   not beside this repo; skipped')
