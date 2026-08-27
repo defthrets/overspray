@@ -29,7 +29,7 @@ namespace Overspray.UI
         // of 0.600, so the spread row and the hint line were hanging out of the bottom of the
         // box. In game that reads as text floating under a menu, which is a strange bug to
         // report and a stranger one to find.
-        private const float PanelH = 0.66f;
+        private const float PanelH = 0.72f;
         private const float Pad = 0.022f;
 
         private const float FieldH = 0.22f;      // the saturation/value square
@@ -78,7 +78,7 @@ namespace Overspray.UI
         /// cursor on it, because that is what makes a colour pickable at a glance; it just is
         /// not pretending to be steerable in two dimensions with controls that are not.
         /// </summary>
-        private enum Row { Field, Bright, Hue, Presets, Size }
+        private enum Row { Field, Bright, Hue, Presets, Size, Take }
 
         private readonly Settings _cfg;
 
@@ -142,14 +142,17 @@ namespace Overspray.UI
             if (Held(Control.PhoneLeft) && fast) Nudge(-1);
             if (Held(Control.PhoneRight) && fast) Nudge(1);
 
-            if (Tapped(Control.PhoneSelect) && _row == Row.Presets) TakePreset();
+            if (!Tapped(Control.PhoneSelect)) return;
+
+            if (_row == Row.Presets) TakePreset();
+            else if (_row == Row.Take) TakeCan();
         }
 
         private void Move(int by)
         {
             var n = (int)_row + by;
-            if (n < 0) n = 4;
-            if (n > 4) n = 0;
+            if (n < 0) n = 5;
+            if (n > 5) n = 0;
 
             _row = (Row)n;
             Hud.Sound("NAV_UP_DOWN", "HUD_FRONTEND_DEFAULT_SOUNDSET");
@@ -179,6 +182,22 @@ namespace Overspray.UI
                     Scale = Clamp(Scale + dir * 0.04f, 0.35f, 2.2f);
                     break;
             }
+        }
+
+        /// <summary>
+        /// Puts an extinguisher in his hand.
+        ///
+        /// A ROW RATHER THAN A SECOND HOTKEY. A mod with two bindings has one the player has
+        /// forgotten, and this is a thing you do once a session at most -- it does not deserve
+        /// a key of its own, it deserves to be where you already are when you want it.
+        ///
+        /// Equipped as well as given, because somebody who just asked for one wants it in his
+        /// hands, not filed in a wheel he now has to open.
+        /// </summary>
+        private void TakeCan()
+        {
+            Paint.Can.Give(true);
+            Hud.Sound("SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET");
         }
 
         private void TakePreset()
@@ -259,8 +278,25 @@ namespace Overspray.UI
             // ---- size ----
             SizeRow(x, y, inner);
 
-            y += 0.052f;
-            Hud.Text("ARROWS  move and adjust     ENTER  take a preset     BACKSPACE  close",
+            y += 0.056f;
+
+            // ---- the extinguisher ----
+            var has = Paint.Can.Has();
+            var active = _row == Row.Take;
+
+            Hud.Box(x, y, inner, 0.040f,
+                    active ? Color.FromArgb(255, 40, 40, 40) : Color.FromArgb(255, 24, 24, 24));
+
+            if (active) Hud.Frame(x, y, inner, 0.040f, 0.0022f, Ink);
+
+            Hud.Text(has ? "TAKE ANOTHER EXTINGUISHER" : "TAKE AN EXTINGUISHER",
+                     x + Hud.X(0.012f), y + 0.009f, 0.34f, active ? Ink : Dim);
+
+            Hud.Text(has ? "you have one" : "ENTER",
+                     x + inner - Hud.X(0.055f), y + 0.010f, 0.28f,
+                     has ? Dim : Colour);
+
+            Hud.Text("ARROWS  move and adjust      ENTER  take      BACKSPACE  close",
                      x, top + PanelH - 0.030f, 0.27f, Dim);
         }
 

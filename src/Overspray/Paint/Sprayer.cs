@@ -64,14 +64,6 @@ namespace Overspray.Paint
         /// </summary>
         public float Scale = 1f;
 
-        /// <summary>
-        /// Whether the extinguisher paints at all.
-        ///
-        /// Off, this class does nothing and the weapon is the game's own -- it still puts out
-        /// fires, because the mod never touched that. It only ever added something.
-        /// </summary>
-        public bool Armed = true;
-
         /// <summary>True while paint is actually coming out, for anything that wants to know.</summary>
         public bool Spraying { get; private set; }
 
@@ -113,7 +105,7 @@ namespace Overspray.Paint
                 var got = Function.Call<uint>(Hash.GET_SELECTED_PED_WEAPON, me.Handle);
 
                 if (got != want) return false;
-                if (!Armed) return false;
+                if (!_cfg.PaintEnabled) return false;
 
                 return Game.IsControlPressed(Control.Attack) ||
                        Function.Call<bool>(Hash.IS_DISABLED_CONTROL_PRESSED, 0, (int)Control.Attack);

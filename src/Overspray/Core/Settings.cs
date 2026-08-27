@@ -69,27 +69,21 @@ namespace Overspray.Core
         public bool ColourTheSmoke = true;
 
         /// <summary>
-        /// Whether paint mode is on when the game starts.
+        /// Whether the extinguisher paints at all.
         ///
-        /// THIS IS THE ANSWER TO "does a normal extinguisher still work". The weapon itself is
-        /// never touched -- it puts fires out exactly as it always did, because nothing here
-        /// modifies it. What the mod does is WATCH it and add paint, and that is the part you
-        /// would not want happening while you are actually putting a fire out.
+        /// NO HOTKEY, on purpose. There is one key in this mod and it opens the picker; the
+        /// paint is simply what an extinguisher does once this is installed. An arming toggle
+        /// is a second thing to remember and a second thing to have got wrong when it does not
+        /// work, and the whole point of the tool is to pick up and use.
         ///
-        /// So it is a mode. Off, the extinguisher is the game's. On, it also paints. Both are
-        /// one key press apart and the HUD says which you are in whenever the thing is in your
-        /// hands, because a mode you cannot see is a mode you forget you are in.
+        /// It stays here as a setting for somebody who wants a plain extinguisher back without
+        /// uninstalling. The weapon is never modified either way -- it puts fires out exactly
+        /// as it always did, because all this does is watch it and add paint on top.
         /// </summary>
-        public bool PaintOnByDefault = true;
-
-        /// <summary>Toggles paint mode. The picker key opens the picker; this arms it.</summary>
-        public Keys ToggleKey = Keys.F6;
+        public bool PaintEnabled = true;
 
         /// <summary>Whether the can takes the nearest of the game's eight weapon tints.</summary>
         public bool TintTheCan = true;
-
-        /// <summary>Whether opening the picker hands you an extinguisher if you have none.</summary>
-        public bool GiveOne = true;
 
         /// <summary>Whether paint survives a reload.</summary>
         public bool Persist = true;
@@ -121,12 +115,7 @@ namespace Overspray.Core
 
                 s.ColourTheSmoke = ini.GetBool("Paint", "ColourTheSmoke", s.ColourTheSmoke);
                 s.TintTheCan = ini.GetBool("Paint", "TintTheCan", s.TintTheCan);
-                s.PaintOnByDefault = ini.GetBool("General", "PaintOnByDefault", s.PaintOnByDefault);
-                s.GiveOne = ini.GetBool("General", "GiveOne", s.GiveOne);
-
-                var tog = ini.GetString("General", "ToggleKey", s.ToggleKey.ToString());
-                Keys tk;
-                if (Enum.TryParse(tog, true, out tk)) s.ToggleKey = tk;
+                s.PaintEnabled = ini.GetBool("Paint", "PaintEnabled", s.PaintEnabled);
 
                 if (s.MaxSize < s.MinSize) s.MaxSize = s.MinSize;
             }

@@ -44,7 +44,6 @@ namespace Overspray
                 _picker = new Picker(_cfg);
                 _can = new Can();
 
-                _sprayer.Armed = _cfg.PaintOnByDefault;
 
                 if (_cfg.Persist) Load();
 
@@ -53,9 +52,8 @@ namespace Overspray
                 KeyDown += OnKey;
                 Aborted += OnAborted;
 
-                Log.Info(Build.Name + " " + Build.Version + " loaded. " +
-                         _cfg.ToggleKey + " arms it, " + _cfg.MenuKey + " picks a colour. " +
-                         "Paint mode is " + (_sprayer.Armed ? "ON" : "OFF") + " to start.");
+                Log.Info(Build.Name + " " + Build.Version + " loaded. " + _cfg.MenuKey +
+                         " opens the picker; take an extinguisher from it and spray.");
             }
             catch (Exception ex)
             {
@@ -89,7 +87,7 @@ namespace Overspray
                 // The can takes the nearest of the game's eight tints, and only while armed --
                 // an extinguisher that stays hot pink after you switch paint off is a mod
                 // leaving its fingerprints on somebody else's weapon.
-                if (_cfg.TintTheCan) _can.Match(_picker.Colour, _sprayer.Armed);
+                if (_cfg.TintTheCan) _can.Match(_picker.Colour, _cfg.PaintEnabled);
 
                 Badge();
 
@@ -113,57 +111,34 @@ namespace Overspray
         private void OnKey(object sender, KeyEventArgs e)
         {
             if (_parked || _cfg == null || !_cfg.Enabled) return;
-            if (e.KeyCode == _cfg.ToggleKey)
-            {
-                _sprayer.Armed = !_sprayer.Armed;
-
-                if (!_sprayer.Armed)
-                {
-                    _sprayer.Stop();
-                    _can.Reset();
-                }
-
-                UI.Hud.Sound(_sprayer.Armed ? "SELECT" : "BACK", "HUD_FRONTEND_DEFAULT_SOUNDSET");
-                return;
-            }
-
+            // ONE KEY. Taking an extinguisher is a row inside the picker rather than a second
+            // binding, because a mod with two hotkeys has one the player has forgotten.
             if (e.KeyCode != _cfg.MenuKey) return;
-
-            // The picker is the front door, so it hands you one on the way in. Vanilla leaves
-            // extinguishers lying about in fire stations, which is a scavenger hunt before the
-            // mod can be used at all.
-            if (_cfg.GiveOne) Can.Give(false);
 
             _picker.Toggle();
         }
 
         /// <summary>
-        /// A line in the corner, but only while the thing is in his hands.
+        /// The colour loaded, in the corner, while the extinguisher is in his hands.
         ///
-        /// A MODE YOU CANNOT SEE IS A MODE YOU FORGET YOU ARE IN, and the two failure reports
-        /// this avoids are opposite: "it sprayed paint all over a fire I was putting out" and
-        /// "it stopped working". Both are the same question -- which mode am I in -- and both
-        /// go away the moment the screen answers it without being asked.
+        /// Not a mode indicator any more -- there is no mode. It is the swatch, which is the
+        /// one thing you cannot tell by looking at the world: the can is only ever the nearest
+        /// of eight tints, so the actual colour about to come out of it lives here.
         ///
-        /// Nothing at all when the extinguisher is away, because then it is not a mode, it is
-        /// a setting for a tool nobody is holding.
+        /// Nothing at all when the extinguisher is away.
         /// </summary>
         private void Badge()
         {
-            if (!Can.Out()) return;
+            if (!Can.Out() || !_cfg.PaintEnabled) return;
 
-            var on = _sprayer.Armed;
-            var c = on ? _picker.Colour : System.Drawing.Color.FromArgb(255, 150, 150, 150);
+            var c = _picker.Colour;
 
-            UI.Hud.Box(0.012f, 0.760f, UI.Hud.X(0.006f), 0.030f, c);
+            UI.Hud.Box(0.012f, 0.762f, UI.Hud.X(0.020f), 0.026f, c);
+            UI.Hud.Frame(0.012f, 0.762f, UI.Hud.X(0.020f), 0.026f, 0.0015f,
+                         System.Drawing.Color.FromArgb(255, 30, 30, 30));
 
-            UI.Hud.Text(on ? "PAINT" : "EXTINGUISHER",
-                        0.024f, 0.762f, 0.32f, c);
-
-            UI.Hud.Text(on
-                        ? _cfg.ToggleKey + " off      " + _cfg.MenuKey + " colour"
-                        : _cfg.ToggleKey + " to paint",
-                        0.024f, 0.784f, 0.26f, System.Drawing.Color.FromArgb(255, 140, 140, 140));
+            UI.Hud.Text(_cfg.MenuKey.ToString(), 0.040f, 0.763f, 0.28f,
+                        System.Drawing.Color.FromArgb(255, 150, 150, 150));
         }
 
         private void OnAborted(object sender, EventArgs e)
