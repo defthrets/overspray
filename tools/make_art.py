@@ -35,6 +35,9 @@ PAD = 90             # room for the halo to fall off into
 
 random.seed(20260827)
 
+# How many frames the tile's spray loops through.
+TILE_FRAMES = 8
+
 
 def wordmark(text):
     font = ImageFont.truetype(FONT, SIZE)
@@ -160,20 +163,19 @@ def can():
     return Image.merge('RGBA', (Image.new('L', img.size, 255),) * 3 + (img,))
 
 
-def tile(_tin):
+def tile(_tin, phase=None):
     """
     The can again, as a 64x64 app icon -- drawn fresh, not the masthead one shrunk.
 
-    TWO WRONG TURNS GOT HERE AND BOTH ARE WORTH KEEPING. First a real speckle cone off the
-    nozzle, the same trick that makes the wordmark work: fine at 128 pixels, a grey shard
-    stuck to a white blob at twenty. Then the tall can simply tilted and scaled down: the
-    slant thinned every stroke, and the punched-out label band ate the middle of an already
-    narrow body and turned it to mud.
+    A SQUARE FILE BECAUSE THE TILE IS A SQUARE. Every icon in the set is 64x64 and the draw
+    call forces the aspect, so the tall masthead can would squash into a fat little barrel.
 
-    So this is a SEPARATE SHAPE that happens to be the same object. Fatter, barely tilted,
-    no label, three bold dots with real gaps. Everything that survives twenty pixels and
-    nothing that does not -- an icon is read in about a tenth of a second, and at that size
-    detail is not detail, it is noise.
+    AND ALMOST NO DETAIL, which took a wrong turn to learn: a real speckle cone off the nozzle
+    looked good at 128 pixels and was a grey shard stuck to a white blob at twenty, which is
+    the size that matters. An icon is read in about a tenth of a second. Three dots say spray;
+    two thousand say nothing.
+
+    phase is 0..1 round the animation loop, or None for the still frame.
     """
     S = 512
     img = Image.new('L', (S, S), 0)
@@ -188,23 +190,41 @@ def tile(_tin):
     box(0.07, 0.33, 0.47, 0.42, 0.02)      # rim, proud both sides
     box(0.20, 0.24, 0.34, 0.35, 0.015)     # waist
     box(0.13, 0.09, 0.41, 0.26, 0.04)      # cap
+    box(0.40, 0.13, 0.53, 0.21, 0.02)      # nozzle, out of the flank
 
-    # The nozzle, out of the cap's flank, matching the big can. It was left off entirely here
-    # -- the dots alone were doing the work -- and that made the tile the one place in the mod
-    # where the can was a different object. Small, but it is the piece that says which way the
-    # thing points, and the dots now visibly come OUT of something instead of just existing.
-    box(0.40, 0.13, 0.53, 0.21, 0.02)
-
-    # Three, falling, with the gaps widening -- which is what reads as travel rather than as a
-    # row of buttons. Four was one too many; the last one always merged into its neighbour.
+    # ---- the spray ----
     #
-    # Re-aimed off the nozzle tip rather than off the top of the cap, or they trail from a
-    # point nothing is emitting from.
-    for fx, fy, r in ((0.63, 0.15, 0.080),
-                      (0.79, 0.11, 0.055),
-                      (0.92, 0.07, 0.033)):
-        cx, cy, rr = fx * S, fy * S, r * S
-        d.ellipse((cx - rr, cy - rr, cx + rr, cy + rr), fill=255)
+    # SMALLEST AT THE NOZZLE, GROWING AS IT GOES. It ran the other way before -- a fat blob
+    # against the tip tapering away to nothing -- and that is the shape of something being
+    # SUCKED IN. Paint leaves a nozzle as a fine point and opens out, so an icon that does the
+    # opposite reads backwards to anybody who has held a can.
+    #
+    # Each dot walks the same path a third of a loop apart, so it reads as a continuous stream
+    # rather than as three things blinking together.
+    for j in range(3):
+        if phase is None:
+            u = (j + 1) / 4.0                       # still frame: evenly spaced, mid-travel
+        else:
+            u = (phase + j / 3.0) % 1.0
+
+        # Travel and growth both pulled in so the LAST dot -- the biggest -- still fits the
+        # box. It ran to 0.96 with a 0.086 radius, which puts its far edge outside the canvas,
+        # and a clipped circle reads as a half-moon rather than as a blob of paint.
+        x = (0.50 + u * 0.330) * S
+        y = (0.190 - u * 0.078) * S
+        r = (0.014 + u * 0.058) * S
+
+        # In quickly at the tip, out gently at the far end, so nothing pops into existence.
+        a = 255
+        if u < 0.14:
+            a = int(255 * (u / 0.14))
+        elif u > 0.80:
+            a = int(255 * (1.0 - (u - 0.80) / 0.20))
+
+        if a <= 4:
+            continue
+
+        d.ellipse((x - r, y - r, x + r, y + r), fill=a)
 
     img = img.rotate(-10, resample=Image.BICUBIC, center=(S * 0.28, S * 0.62))
     img = img.resize((64, 64), Image.LANCZOS)
@@ -212,10 +232,6 @@ def tile(_tin):
     return Image.merge('RGBA', (Image.new('L', img.size, 255),) * 3 + (img,))
 
 
-
-# ---------------------------------------------------------------------------
-#  The tag
-# ---------------------------------------------------------------------------
 
 SCRIPT = os.path.join(os.environ.get('WINDIR', r'C:\Windows'), 'Fonts', 'segoescb.ttf')
 
@@ -394,11 +410,15 @@ def main():
         g.save(os.path.join(other, 'graffiti.png'))
         tin.save(os.path.join(other, 'spraycan.png'))
 
-        app = tile(tin)
-        app.save(os.path.join(other, 'sprayapp.png'))
+        # The still one, for anything wanting a single file, and the loop for the tile.
+        tile(tin).save(os.path.join(other, 'sprayapp.png'))
 
-        print('  hoodrich   graffiti.png %dx%d   spraycan.png %dx%d   sprayapp.png %dx%d'
-              % (g.size + tin.size + app.size))
+        for i in range(TILE_FRAMES):
+            tile(tin, i / float(TILE_FRAMES)).save(
+                os.path.join(other, 'sprayapp%d.png' % (i + 1)))
+
+        print('  hoodrich   graffiti.png %dx%d   spraycan.png %dx%d   sprayapp + %d frames'
+              % (g.size + tin.size + (TILE_FRAMES,)))
         print('    graffiti aspect %.4f' % (g.size[0] / float(g.size[1])))
     else:
         print('  hoodrich   not beside this repo; skipped')
