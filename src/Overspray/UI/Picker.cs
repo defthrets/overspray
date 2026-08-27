@@ -24,10 +24,17 @@ namespace Overspray.UI
         private const float SwatchH = 0.075f;
         private const float ButtonH = 0.044f;
 
-        /// <summary>The mark and the can, and the shape of the files behind them.</summary>
-        private const float LogoH = 0.034f;
-        private const float LogoAspect = 4.62f;
-        private const float CanH = 0.060f;
+        /// <summary>
+        /// The mark and the can, and the shape of the files behind them.
+        ///
+        /// THE TAG IS TALLER THAN A WORDMARK, and the height had to roughly double because of
+        /// it. Impact filled its box with letters; a tag spends the top of the box on an arrow,
+        /// the bottom on drips, and gives the word itself about half. Keeping the old height
+        /// would have kept the FILE the same size and shrunk the reading matter by half.
+        /// </summary>
+        private const float LogoH = 0.066f;
+        private const float LogoAspect = 3.1416f;
+        private const float CanH = 0.052f;
         private const float CanAspect = 0.4412f;
 
         /// <summary>How the panel arrives.</summary>
@@ -308,7 +315,7 @@ namespace Overspray.UI
             if (!IsOpen) return;
 
             var w = Hud.X(0.45f);
-            var h = Pad * 2f + LogoH + 0.008f + CanH + 0.014f + SwatchH + 0.020f
+            var h = Pad * 2f + LogoH + 0.004f + CanH + 0.014f + SwatchH + 0.020f
                     + ButtonH * 4f + 0.024f + 0.030f;
 
             var left = 0.5f - w * 0.5f;
@@ -325,8 +332,24 @@ namespace Overspray.UI
 
             var top = 0.5f - h * 0.5f + (1f - eased) * 0.030f;
 
+            // ---- the world, dimmed ----
+            //
+            // A panel floating over a bright street with nothing behind it is the single thing
+            // that most makes a mod menu look bolted on. Everything the game itself opens dims
+            // what is behind it first, and it costs one rectangle.
+            Hud.Box(0f, 0f, 1f, 1f, Hud.Fade(Color.FromArgb(150, 0, 0, 0), eased));
+
             Hud.Box(left, top, w, h, Hud.Fade(Back, eased));
-            Hud.Box(left, top, w, 0.0035f, Hud.Fade(Hud.Legible(Colour), eased));
+
+            var accent = Hud.Fade(Hud.Legible(Colour), eased);
+
+            Hud.Box(left, top, w, 0.0035f, accent);
+
+            // Three short runs off the accent bar, uneven, in the colour that is loaded. The
+            // logo drips; the panel it sits on may as well.
+            Hud.Box(left + w * 0.17f, top, 0.0030f, 0.0135f, accent);
+            Hud.Box(left + w * 0.55f, top, 0.0030f, 0.0082f, accent);
+            Hud.Box(left + w * 0.79f, top, 0.0030f, 0.0175f, accent);
 
             var x = left + Hud.X(Pad);
             var inner = w - Hud.X(Pad) * 2f;
@@ -351,7 +374,7 @@ namespace Overspray.UI
 
             Hud.TextRight(Names[_pick], x + inner, y + 0.004f, 0.34f, live);
 
-            y += LogoH + 0.008f;
+            y += LogoH + 0.004f;
 
             // ---- the can, having a shake ----
             Can(left + w * 0.5f, y, eased);
