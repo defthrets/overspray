@@ -83,6 +83,12 @@ namespace Overspray
                 {
                     _sprayer.Colour = _picker.Colour;
                     _sprayer.Scale = _picker.Scale;
+
+                    // Set BEFORE Update, because Update is what starts the plume, and a
+                    // nozzle handed over a frame late is a plume that comes out of his wrist
+                    // on the first press of every trigger pull.
+                    _sprayer.Nozzle = _spraycan.Handle;
+
                     _sprayer.Update();
                 }
 

@@ -67,7 +67,7 @@ namespace Overspray.Core
         /// gets you paint that vanishes from behind while you are still spraying, which looks
         /// like a bug in the placement.
         /// </summary>
-        public int MaxMarks = 420;
+        public int MaxMarks = 1500;
 
         /// <summary>Whether the plume is tinted to the colour you are spraying.</summary>
         public bool ColourTheSmoke = true;
@@ -132,6 +132,17 @@ namespace Overspray.Core
         public float ExtinguisherLasts = 3f;
 
         /// <summary>
+        /// Whether the extinguisher ever empties. It does not.
+        ///
+        /// Same reasoning as the can: this is a painting tool now, and a painting tool that
+        /// sends you back to a menu part-way up a wall is friction with nothing on the other
+        /// side of it. ExtinguisherLasts above is what governs it if you turn this back on --
+        /// it is left in rather than deleted so the dial still exists for anyone who wants
+        /// the tank to mean something.
+        /// </summary>
+        public bool ExtinguisherRunsOut = false;
+
+        /// <summary>
         /// Whether the spray can ever empties. It does not.
         ///
         /// A can of paint in a mod about painting should not send you back to a menu halfway
@@ -178,7 +189,7 @@ namespace Overspray.Core
                 s.MinSize = Clamp(ini.GetFloat("Paint", "MinSize", s.MinSize), 0.02f, 3f);
                 s.MaxSize = Clamp(ini.GetFloat("Paint", "MaxSize", s.MaxSize), 0.05f, 8f);
                 s.Opacity = Clamp(ini.GetFloat("Paint", "Opacity", s.Opacity), 0.1f, 1f);
-                s.MaxMarks = (int)Clamp(ini.GetFloat("Paint", "MaxMarks", s.MaxMarks), 16f, 2000f);
+                s.MaxMarks = (int)Clamp(ini.GetFloat("Paint", "MaxMarks", s.MaxMarks), 16f, 10000f);
 
                 s.ColourTheSmoke = ini.GetBool("Paint", "ColourTheSmoke", s.ColourTheSmoke);
                 s.TintTheCan = ini.GetBool("Paint", "TintTheCan", s.TintTheCan);
@@ -194,6 +205,7 @@ namespace Overspray.Core
                 if (s.MaxSize < s.MinSize) s.MaxSize = s.MinSize;
                 s.ExtinguisherLasts = Clamp(ini.GetFloat("Paint", "ExtinguisherLasts", s.ExtinguisherLasts), 1f, 50f);
                 s.CanRunsOut = ini.GetBool("Paint", "CanRunsOut", s.CanRunsOut);
+                s.ExtinguisherRunsOut = ini.GetBool("Paint", "ExtinguisherRunsOut", s.ExtinguisherRunsOut);
 
                 if (s.CanMaxSize < s.CanMinSize) s.CanMaxSize = s.CanMinSize;
             }

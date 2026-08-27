@@ -22,6 +22,40 @@ namespace Overspray.Core
             {
                 if (!string.IsNullOrEmpty(_scripts)) return _scripts;
 
+                // CODEBASE, NOT LOCATION, AND THE DIFFERENCE IS NOT ACADEMIC.
+                //
+                // ScriptHookVDotNet shadow-copies every script into
+                // AppData\Local\assembly\dl3\... before running it. Under a shadow copy
+                // Location is that temp folder; CodeBase stays the file it was loaded from.
+                //
+                // Reading Location meant this mod looked for its ini beside the COPY, where
+                // there has never been one and never will be -- so every setting anybody
+                // edited was silently ignored, the log was written somewhere nobody would
+                // think to look, and saved paint was orphaned in a new folder on every
+                // rebuild. It logged "No ini ... using built-in defaults" each launch, which
+                // reads like a missing file rather than a mod looking in the wrong place.
+                try
+                {
+                    var code = Assembly.GetExecutingAssembly().CodeBase;
+
+                    if (!string.IsNullOrEmpty(code))
+                    {
+                        var dir = Path.GetDirectoryName(new Uri(code).LocalPath);
+
+                        // Only if it is really there. A CodeBase that does not resolve is
+                        // worse than no answer, because everything downstream trusts this.
+                        if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir))
+                        {
+                            _scripts = dir;
+                            return _scripts;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Fall through to Location, which is right when nothing shadow-copies.
+                }
+
                 try
                 {
                     var here = Assembly.GetExecutingAssembly().Location;

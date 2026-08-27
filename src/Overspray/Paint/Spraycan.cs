@@ -66,6 +66,15 @@ namespace Overspray.Paint
         public bool Out => _can != null && _can.Exists();
 
         /// <summary>
+        /// The can's entity, or 0.
+        ///
+        /// The plume hangs off this. It has to hang off something you can SEE, and the
+        /// weapon -- which is what it used to use -- is deliberately invisible whenever
+        /// this look is on.
+        /// </summary>
+        public int Handle => Out ? _can.Handle : 0;
+
+        /// <summary>
         /// Called every tick. Puts the can up when the tool is out, takes it away when it is not.
         /// </summary>
         public void Update(bool spraying)

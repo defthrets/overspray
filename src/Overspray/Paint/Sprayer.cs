@@ -58,19 +58,31 @@ namespace Overspray.Paint
             public readonly string Name;
             public readonly float Size;
 
-            public Plume(string asset, string name, float size)
+            /// <summary>
+            /// Whether to call USE_PARTICLE_FX_ASSET before starting it.
+            ///
+            /// Rockstar's own graffiti scene does NOT call it for the core asset -- it just
+            /// requests and starts. Mods habitually call USE("core") and it usually works,
+            /// but "usually" is doing real work in that sentence, so both orders are in the
+            /// ladder and whichever starts is the one that gets remembered.
+            /// </summary>
+            public readonly bool Select;
+
+            public Plume(string asset, string name, float size, bool select)
             {
                 Asset = asset;
                 Name = name;
                 Size = size;
+                Select = select;
             }
         }
 
         /// <summary>The thin line, which is what tells you where the paint is about to go.</summary>
         private static readonly Plume[] Jets =
         {
-            new Plume(null, "scr_lamgraff_paint_spray", 1.1f),
-            new Plume("scr_lamgraff", "scr_lamgraff_paint_spray", 1.1f)
+            new Plume(null, "scr_lamgraff_paint_spray", 1.1f, false),
+            new Plume(null, "scr_lamgraff_paint_spray", 1.1f, true),
+            new Plume("scr_lamgraff", "scr_lamgraff_paint_spray", 1.1f, true)
         };
 
         /// <summary>
@@ -86,10 +98,11 @@ namespace Overspray.Paint
         /// </summary>
         private static readonly Plume[] Clouds =
         {
-            new Plume(null, "ent_amb_shower_steam", 2.6f),
-            new Plume(null, "ent_anim_cig_exhale_mth", 3.2f),
-            new Plume("scr_agency3b", "scr_agency3b_blding_smoke", 1.5f),
-            new Plume(null, "ent_anim_leaf_blower", 2.2f)
+            new Plume(null, "ent_amb_shower_steam", 2.6f, false),
+            new Plume(null, "ent_amb_shower_steam", 2.6f, true),
+            new Plume(null, "ent_anim_cig_exhale_mth", 3.2f, true),
+            new Plume("scr_agency3b", "scr_agency3b_blding_smoke", 1.5f, true),
+            new Plume(null, "ent_anim_leaf_blower", 2.2f, true)
         };
 
         private readonly Settings _cfg;
@@ -117,6 +130,13 @@ namespace Overspray.Paint
         /// pressure: same plume, more or less of it.
         /// </summary>
         public float Scale = 1f;
+
+        /// <summary>
+        /// The visible thing the plume comes out of, set from outside each tick.
+        ///
+        /// 0 means there is not one, and the hand is used instead.
+        /// </summary>
+        public int Nozzle;
 
         /// <summary>True while paint is actually coming out, for anything that wants to know.</summary>
         public bool Spraying { get; private set; }
@@ -243,7 +263,21 @@ namespace Overspray.Paint
                 //
                 // Falls back to the hand when the weapon object cannot be had, which is the
                 // case for a frame or two around drawing it.
-                var gun = Function.Call<int>(Hash.GET_CURRENT_PED_WEAPON_ENTITY_INDEX, me.Handle, 0);
+                // WHATEVER IS ACTUALLY VISIBLE.
+                //
+                // Particles attached to a hidden entity are hidden along with it, and the
+                // spray can look hides the weapon on purpose. Hanging the plume off the
+                // weapon there is asking for an invisible effect, and that is exactly what
+                // it got: a whole session's log without a single Plume line, and nothing
+                // coming out of the can.
+                //
+                // The can when there is a can, the weapon when the weapon is the thing you
+                // can see. Light falls back to the hand bone when neither is available,
+                // which is the case for a frame or two around drawing it -- and the hand is
+                // visible in both looks, so that fallback is never the invisible one.
+                var gun = _cfg.SprayCanLook
+                    ? Nozzle
+                    : Function.Call<int>(Hash.GET_CURRENT_PED_WEAPON_ENTITY_INDEX, me.Handle, 0);
 
                 _fx = Light(Jets, ref _jetPick, gun, me.Handle, r, g, b, 0.90f);
 
@@ -253,6 +287,8 @@ namespace Overspray.Paint
                 _cloud = _cfg.SprayCanLook
                     ? -1
                     : Light(Clouds, ref _cloudPick, gun, me.Handle, r, g, b, 0.45f);
+
+                Moan();
             }
             catch (Exception ex)
             {
@@ -260,6 +296,45 @@ namespace Overspray.Paint
                 _cloud = -1;
                 Log.Debug("No coloured plume: " + ex.Message);
             }
+        }
+
+        private int _dry;
+        private bool _moaned;
+
+        /// <summary>
+        /// Says so, once, when the plume simply will not start.
+        ///
+        /// SILENCE WAS THE ACTUAL BUG HERE. The ladder failing looked identical to the
+        /// feature being switched off, and a whole session went by with nothing coming out
+        /// of the can and not one line in the log to say why. A ladder that can fail has to
+        /// be able to report that it failed.
+        /// </summary>
+        private void Moan()
+        {
+            if (_fx != -1)
+            {
+                _dry = 0;
+                _moaned = false;
+                return;
+            }
+
+            // Several goes, not one. The first few legitimately fail while the asset streams
+            // in, and complaining about those would be noise that trains you to ignore it.
+            if (++_dry < 8 || _moaned) return;
+
+            _moaned = true;
+
+            var tried = new System.Text.StringBuilder();
+
+            foreach (var p in Jets)
+            {
+                tried.Append(p.Name).Append(" out of ").Append(p.Asset ?? "core")
+                     .Append(p.Select ? " (selected)" : " (unselected)").Append("; ");
+            }
+
+            Log.Warn("No plume will start after " + _dry + " goes. Tried: " + tried +
+                     "Paint still lands -- this is the visible spray only. Nozzle entity was " +
+                     Nozzle + ".");
         }
 
         /// <summary>
@@ -308,7 +383,7 @@ namespace Overspray.Paint
                 // Named assets have to be selected, and core has to be selected BACK -- or
                 // whichever named asset was used last is still current and a core effect gets
                 // looked up in the wrong place.
-                Function.Call(Hash.USE_PARTICLE_FX_ASSET, p.Asset ?? "core");
+                if (p.Select) Function.Call(Hash.USE_PARTICLE_FX_ASSET, p.Asset ?? "core");
                 Function.Call(Hash.SET_PARTICLE_FX_NON_LOOPED_COLOUR, r, g, b);
 
                 int fx;

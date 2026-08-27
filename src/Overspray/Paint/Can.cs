@@ -240,11 +240,13 @@ namespace Overspray.Paint
 
                 if (spent <= 0) return;
 
-                var stretch = cfg.SprayCanLook && !cfg.CanRunsOut
-                    ? 0f                                    // a can: everything comes back
-                    : Math.Max(1f, cfg.ExtinguisherLasts);
+                // Endless means every unit spent is handed straight back, so the gauge never
+                // moves. Otherwise two thirds come back, which is a tank that lasts three
+                // times as long -- the fraction falls out of the multiplier rather than being
+                // a second number that has to agree with it.
+                var endless = cfg.SprayCanLook ? !cfg.CanRunsOut : !cfg.ExtinguisherRunsOut;
 
-                var keep = stretch <= 0f ? 1f : 1f - 1f / stretch;
+                var keep = endless ? 1f : 1f - 1f / Math.Max(1f, cfg.ExtinguisherLasts);
 
                 _owed += spent * keep;
 

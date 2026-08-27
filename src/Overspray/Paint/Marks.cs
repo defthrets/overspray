@@ -72,6 +72,7 @@ namespace Overspray.Paint
         private int _type;
         private int _nextSweep;
         private int _refused;
+        private bool _proved;
 
         public Marks(Settings cfg)
         {
@@ -106,6 +107,18 @@ namespace Overspray.Paint
             };
 
             mark.Handle = Place(mark);
+
+            // THE GAME'S POOL IS THE REAL CEILING, NOT MaxMarks. It holds a few hundred decals
+            // across the entire world and refuses quietly once they are gone, so simply
+            // allowing a bigger list buys nothing on its own -- the extra marks are recorded
+            // and never make it onto a wall.
+            //
+            // So a refusal takes the slot back off whatever is furthest away and already
+            // painted. Paint in front of you always beats paint a street behind you, and the
+            // far one stays in the list, so it comes back when you walk to it. That turns the
+            // pool from a hard cap on how much you can paint into a budget spent on whatever
+            // you are actually looking at.
+            if (mark.Handle == 0 && Recycle(at)) mark.Handle = Place(mark);
 
             if (mark.Handle == 0)
             {
@@ -145,7 +158,13 @@ namespace Overspray.Paint
                                                 m.Side.X, m.Side.Y, m.Side.Z,
                                                 m.Size, m.Size,
                                                 m.R, m.G, m.B, _cfg.Opacity,
-                                                Forever, true, false, false);
+                                                // FALSE, FALSE, FALSE -- what every single
+                                                // ADD_DECAL call in the game's own scripts
+                                                // passes. This had true in the first slot,
+                                                // which was a guess, and a guess that differs
+                                                // from all 20-odd of R*'s own calls is not a
+                                                // guess worth keeping.
+                                                Forever, false, false, false);
                 }
                 catch
                 {
@@ -153,6 +172,35 @@ namespace Overspray.Paint
                 }
 
                 if (handle == 0) continue;
+
+                // A HANDLE IS NOT A DECAL. ADD_DECAL hands back a number whether or not
+                // anything ended up on the wall, so the first one that places gets asked
+                // outright whether it lived -- otherwise "it returned a handle" gets treated
+                // as proof of something nobody has actually seen.
+                if (!_proved)
+                {
+                    _proved = true;
+
+                    try
+                    {
+                        if (Function.Call<bool>(Hash.IS_DECAL_ALIVE, handle))
+                        {
+                            Log.Info("First decal is on the wall and alive: type " + type +
+                                     ", " + m.Size.ToString("0.00") + "m across.");
+                        }
+                        else
+                        {
+                            Log.Warn("ADD_DECAL returned handle " + handle + " but " +
+                                     "IS_DECAL_ALIVE says nothing is there. The call is being " +
+                                     "accepted and discarded -- size was " +
+                                     m.Size.ToString("0.00") + "m.");
+                        }
+                    }
+                    catch
+                    {
+                        // The check is a diagnostic; never let it break placing paint.
+                    }
+                }
 
                 if (_type != type)
                 {
@@ -193,6 +241,55 @@ namespace Overspray.Paint
         /// Not for tidiness -- for the pool. A slot held by a splatter four streets away is a
         /// slot the one in front of you cannot have.
         /// </summary>
+        /// <summary>
+        /// Takes a decal off the furthest-away mark so a nearer one can have its slot.
+        ///
+        /// Only when the victim really is further off than what is being sprayed. Without
+        /// that check a full pool trades one visible mark for another every single dab, which
+        /// is a wall that flickers rather than a wall that fills.
+        /// </summary>
+        private bool Recycle(Vector3 near)
+        {
+            Vector3 me;
+
+            try
+            {
+                var ped = Game.Player.Character;
+                if (ped == null || !ped.Exists()) return false;
+                me = ped.Position;
+            }
+            catch
+            {
+                return false;
+            }
+
+            var worst = -1;
+            var worstD = -1f;
+
+            for (var i = 0; i < _marks.Count; i++)
+            {
+                var m = _marks[i];
+
+                if (m.Away || m.Handle == 0) continue;
+
+                var d = me.DistanceTo(m.At);
+                if (d <= worstD) continue;
+
+                worstD = d;
+                worst = i;
+            }
+
+            if (worst < 0) return false;
+            if (worstD <= me.DistanceTo(near) + 1f) return false;
+
+            var victim = _marks[worst];
+
+            Wipe(victim);
+            victim.Away = true;
+
+            return true;
+        }
+
         public void Sweep()
         {
             var now = Game.GameTime;
