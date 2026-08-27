@@ -24,6 +24,7 @@ namespace Overspray
         private readonly Marks _marks;
         private readonly Sprayer _sprayer;
         private readonly Picker _picker;
+        private readonly Can _can;
 
         private int _lastSave;
         private bool _parked;
@@ -41,6 +42,9 @@ namespace Overspray
                 _marks = new Marks(_cfg);
                 _sprayer = new Sprayer(_cfg, _marks);
                 _picker = new Picker(_cfg);
+                _can = new Can();
+
+                _sprayer.Armed = _cfg.PaintOnByDefault;
 
                 if (_cfg.Persist) Load();
 
@@ -50,7 +54,8 @@ namespace Overspray
                 Aborted += OnAborted;
 
                 Log.Info(Build.Name + " " + Build.Version + " loaded. " +
-                         _cfg.MenuKey + " for the picker; extinguisher does the rest.");
+                         _cfg.ToggleKey + " arms it, " + _cfg.MenuKey + " picks a colour. " +
+                         "Paint mode is " + (_sprayer.Armed ? "ON" : "OFF") + " to start.");
             }
             catch (Exception ex)
             {
@@ -81,6 +86,13 @@ namespace Overspray
                     _sprayer.Update();
                 }
 
+                // The can takes the nearest of the game's eight tints, and only while armed --
+                // an extinguisher that stays hot pink after you switch paint off is a mod
+                // leaving its fingerprints on somebody else's weapon.
+                if (_cfg.TintTheCan) _can.Match(_picker.Colour, _sprayer.Armed);
+
+                Badge();
+
                 _marks.Sweep();
 
                 if (!_cfg.Persist) return;
@@ -101,9 +113,57 @@ namespace Overspray
         private void OnKey(object sender, KeyEventArgs e)
         {
             if (_parked || _cfg == null || !_cfg.Enabled) return;
+            if (e.KeyCode == _cfg.ToggleKey)
+            {
+                _sprayer.Armed = !_sprayer.Armed;
+
+                if (!_sprayer.Armed)
+                {
+                    _sprayer.Stop();
+                    _can.Reset();
+                }
+
+                UI.Hud.Sound(_sprayer.Armed ? "SELECT" : "BACK", "HUD_FRONTEND_DEFAULT_SOUNDSET");
+                return;
+            }
+
             if (e.KeyCode != _cfg.MenuKey) return;
 
+            // The picker is the front door, so it hands you one on the way in. Vanilla leaves
+            // extinguishers lying about in fire stations, which is a scavenger hunt before the
+            // mod can be used at all.
+            if (_cfg.GiveOne) Can.Give(false);
+
             _picker.Toggle();
+        }
+
+        /// <summary>
+        /// A line in the corner, but only while the thing is in his hands.
+        ///
+        /// A MODE YOU CANNOT SEE IS A MODE YOU FORGET YOU ARE IN, and the two failure reports
+        /// this avoids are opposite: "it sprayed paint all over a fire I was putting out" and
+        /// "it stopped working". Both are the same question -- which mode am I in -- and both
+        /// go away the moment the screen answers it without being asked.
+        ///
+        /// Nothing at all when the extinguisher is away, because then it is not a mode, it is
+        /// a setting for a tool nobody is holding.
+        /// </summary>
+        private void Badge()
+        {
+            if (!Can.Out()) return;
+
+            var on = _sprayer.Armed;
+            var c = on ? _picker.Colour : System.Drawing.Color.FromArgb(255, 150, 150, 150);
+
+            UI.Hud.Box(0.012f, 0.760f, UI.Hud.X(0.006f), 0.030f, c);
+
+            UI.Hud.Text(on ? "PAINT" : "EXTINGUISHER",
+                        0.024f, 0.762f, 0.32f, c);
+
+            UI.Hud.Text(on
+                        ? _cfg.ToggleKey + " off      " + _cfg.MenuKey + " colour"
+                        : _cfg.ToggleKey + " to paint",
+                        0.024f, 0.784f, 0.26f, System.Drawing.Color.FromArgb(255, 140, 140, 140));
         }
 
         private void OnAborted(object sender, EventArgs e)

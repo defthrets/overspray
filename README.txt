@@ -1,4 +1,4 @@
-OVERSPRAY
+﻿OVERSPRAY
 =========
 
 A fire extinguisher that sprays paint.
@@ -12,8 +12,20 @@ you can write with; at four metres it blooms into something you cover a garage
 door with. That is the whole reason it reads as spray rather than as decals
 appearing one at a time.
 
-  F7            the colour picker
-  extinguisher  everything else
+  F7   the colour picker -- and it hands you an extinguisher on the way in,
+       straight into the weapon wheel, so there is no hunting for one
+  F6   arms and disarms paint mode
+
+DOES A NORMAL EXTINGUISHER STILL WORK? Yes, and the mod never touches it. The
+weapon is the game's own and puts fires out exactly as it always did; all this
+does is watch it and add paint. Press F6 and you have a plain extinguisher back.
+The HUD tells you which mode you are in whenever it is in your hands.
+
+The can takes the colour you picked -- approximately. A weapon's colour comes
+from its textures and the only hook a script gets is the game's fixed table of
+eight tints, so your colour is snapped to the nearest of black, green, gold,
+pink, army, LSPD, orange and platinum. A true match would mean editing the
+model, which is a different kind of mod.
 
 The picker is a real one: a hue strip, a saturation/brightness field, nine
 presets as a shortcut, and a spread dial that tells you what it means in metres

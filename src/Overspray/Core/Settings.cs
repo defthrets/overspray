@@ -68,6 +68,29 @@ namespace Overspray.Core
         /// <summary>Whether the plume is tinted to the colour you are spraying.</summary>
         public bool ColourTheSmoke = true;
 
+        /// <summary>
+        /// Whether paint mode is on when the game starts.
+        ///
+        /// THIS IS THE ANSWER TO "does a normal extinguisher still work". The weapon itself is
+        /// never touched -- it puts fires out exactly as it always did, because nothing here
+        /// modifies it. What the mod does is WATCH it and add paint, and that is the part you
+        /// would not want happening while you are actually putting a fire out.
+        ///
+        /// So it is a mode. Off, the extinguisher is the game's. On, it also paints. Both are
+        /// one key press apart and the HUD says which you are in whenever the thing is in your
+        /// hands, because a mode you cannot see is a mode you forget you are in.
+        /// </summary>
+        public bool PaintOnByDefault = true;
+
+        /// <summary>Toggles paint mode. The picker key opens the picker; this arms it.</summary>
+        public Keys ToggleKey = Keys.F6;
+
+        /// <summary>Whether the can takes the nearest of the game's eight weapon tints.</summary>
+        public bool TintTheCan = true;
+
+        /// <summary>Whether opening the picker hands you an extinguisher if you have none.</summary>
+        public bool GiveOne = true;
+
         /// <summary>Whether paint survives a reload.</summary>
         public bool Persist = true;
 
@@ -97,6 +120,13 @@ namespace Overspray.Core
                 s.MaxMarks = (int)Clamp(ini.GetFloat("Paint", "MaxMarks", s.MaxMarks), 16f, 2000f);
 
                 s.ColourTheSmoke = ini.GetBool("Paint", "ColourTheSmoke", s.ColourTheSmoke);
+                s.TintTheCan = ini.GetBool("Paint", "TintTheCan", s.TintTheCan);
+                s.PaintOnByDefault = ini.GetBool("General", "PaintOnByDefault", s.PaintOnByDefault);
+                s.GiveOne = ini.GetBool("General", "GiveOne", s.GiveOne);
+
+                var tog = ini.GetString("General", "ToggleKey", s.ToggleKey.ToString());
+                Keys tk;
+                if (Enum.TryParse(tog, true, out tk)) s.ToggleKey = tk;
 
                 if (s.MaxSize < s.MinSize) s.MaxSize = s.MinSize;
             }
