@@ -24,6 +24,9 @@ param(
 
     [switch]$Deploy,
 
+    # Builds the release zip in release\, with the tree a player unpacks.
+    [switch]$Package,
+
     [ValidateSet('Legacy', 'Enhanced', 'Both')]
     [string]$Target = 'Both',
 
@@ -186,4 +189,57 @@ if ($Deploy) {
     if ($Target -in 'Enhanced', 'Both') { Deploy-To $EnhancedDir 'Enhanced' }
 
     Write-Host "Deploy complete." -ForegroundColor Green
+}
+
+
+# --- package ----------------------------------------------------------------
+#
+# THE ZIP IS THE PRODUCT, and its shape is the whole install. Somebody who has never seen this
+# repo has one job -- drag "scripts" into the GTA folder -- and every way that goes wrong is a
+# folder in the wrong place. So this builds the tree explicitly and then CHECKS it, because a
+# packaging script that quietly ships four files instead of five is a support thread.
+if ($Package) {
+    $ver = (Select-String -Path (Join-Path $root 'src\Overspray\Core\Log.cs') `
+                          -Pattern 'Version = "([^"]+)"').Matches[0].Groups[1].Value
+
+    $stage = Join-Path $root "build\pkg"
+    $zip = Join-Path $root ("release\Overspray-" + $ver + ".zip")
+
+    if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
+    New-Item -ItemType Directory -Force (Join-Path $stage 'scripts\Overspray\icons') | Out-Null
+    New-Item -ItemType Directory -Force (Join-Path $root 'release') | Out-Null
+
+    Copy-Item $outDll                          (Join-Path $stage 'scripts\Overspray.dll')
+    Copy-Item (Join-Path $root 'Overspray.ini') (Join-Path $stage 'scripts\Overspray.ini')
+    Copy-Item (Join-Path $root 'README.txt')    (Join-Path $stage 'README.txt')
+
+    foreach ($p in Get-ChildItem (Join-Path $root 'data\icons') -Filter *.png) {
+        Copy-Item $p.FullName (Join-Path $stage 'scripts\Overspray\icons')
+    }
+
+    # Every file the mod actually reads, by the path it reads it from. Missing any one of
+    # these is a different broken install, and all of them are silent.
+    $must = @(
+        'README.txt',
+        'scripts\Overspray.dll',
+        'scripts\Overspray.ini',
+        'scripts\Overspray\icons\logo.png',
+        'scripts\Overspray\icons\can.png'
+    )
+
+    $missing = @()
+    foreach ($m in $must) { if (-not (Test-Path (Join-Path $stage $m))) { $missing += $m } }
+
+    if ($missing) { throw "Package is missing: $($missing -join ', ')" }
+
+    if (Test-Path $zip) { Remove-Item $zip -Force }
+    Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $zip -CompressionLevel Optimal
+
+    Write-Host ""
+    Write-Host ("Packaged  {0}" -f (Split-Path $zip -Leaf)) -ForegroundColor Green
+    foreach ($m in $must) {
+        $f = Get-Item (Join-Path $stage $m)
+        Write-Host ("  {0,-42} {1,9:N0} bytes" -f $m, $f.Length) -ForegroundColor DarkGray
+    }
+    Write-Host ("  {0,-42} {1,9:N0} bytes" -f '(zip)', (Get-Item $zip).Length)
 }

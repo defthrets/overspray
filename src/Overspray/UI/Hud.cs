@@ -275,6 +275,28 @@ namespace Overspray.UI
             return Color.FromArgb(255, (int)(r * 255f), (int)(g * 255f), (int)(b * 255f));
         }
 
+        /// <summary>
+        /// A line in the game's own notification feed.
+        ///
+        /// THE SINGLE BEST ANSWER TO "IT DOESN'T WORK". A script mod that loads silently is
+        /// indistinguishable from one that did not load at all, and the person reporting it
+        /// has no way to tell those apart -- so they report the wrong one. One ticker on the
+        /// first frame settles it before anybody opens a log.
+        /// </summary>
+        public static void Ticker(string text)
+        {
+            try
+            {
+                Function.Call(Hash.BEGIN_TEXT_COMMAND_THEFEED_POST, "STRING");
+                Function.Call(Hash.ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME, text);
+                Function.Call(Hash.END_TEXT_COMMAND_THEFEED_POST_TICKER, false, true);
+            }
+            catch
+            {
+                // The log still has it.
+            }
+        }
+
         public static void Sound(string name, string set)
         {
             try { Function.Call(Hash.PLAY_SOUND_FRONTEND, -1, name, set, true); }

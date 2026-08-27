@@ -119,7 +119,15 @@ namespace Overspray.Core
     /// </summary>
     internal static class Build
     {
-        public const string Version = "0.2.0";
+        /// <summary>
+        /// 0.1.0, and it goes DOWN from the 0.2.0 that was here.
+        ///
+        /// Everything before this was built and deployed straight to one machine, so those
+        /// numbers were notes to myself about which build was in the folder. This is the first
+        /// one anybody else can install, and starting a public life at 0.1.0 is more honest
+        /// than pretending there were two releases nobody could have had.
+        /// </summary>
+        public const string Version = "0.1.0";
         public const string Name = "Overspray";
     }
 }

@@ -102,6 +102,8 @@ namespace Overspray
 
             try
             {
+                Hello();
+
                 _picker.Update();
                 _picker.Draw();
 
@@ -181,6 +183,41 @@ namespace Overspray
                 Log.Error("Tick threw.", ex);
             }
         }
+
+        /// <summary>
+        /// Says it is here, once, a moment after the world exists.
+        ///
+        /// NOT FROM THE CONSTRUCTOR. Scripts start while the game is still on the loading
+        /// screen, and a notification posted then is posted to nothing -- so the one message
+        /// whose entire job is to prove the mod loaded would be the one message nobody sees.
+        ///
+        /// It also names the key. Somebody who installed this a week ago and forgot what it
+        /// was bound to should not have to find a readme.
+        /// </summary>
+        private void Hello()
+        {
+            if (_saidHello) return;
+
+            // A few seconds in, and only once the player is real.
+            if (Game.GameTime < 6000) return;
+
+            try
+            {
+                var me = Game.Player.Character;
+                if (me == null || !me.Exists()) return;
+            }
+            catch
+            {
+                return;
+            }
+
+            _saidHello = true;
+
+            UI.Hud.Ticker("~g~" + Build.Name + " " + Build.Version + "~s~ loaded.  Press ~b~" +
+                          _cfg.MenuKey + "~s~ for the can.");
+        }
+
+        private bool _saidHello;
 
         private void OnKey(object sender, KeyEventArgs e)
         {
