@@ -67,14 +67,14 @@ namespace Overspray.Paint
         private const int SweepMs = 1500;
 
         private readonly List<Mark> _marks = new List<Mark>();
-        private readonly Settings _cfg;
+        private readonly PaintConfig _cfg;
 
         private int _type;
         private int _nextSweep;
         private int _refused;
         private bool _proved;
 
-        public Marks(Settings cfg)
+        public Marks(PaintConfig cfg)
         {
             _cfg = cfg;
         }

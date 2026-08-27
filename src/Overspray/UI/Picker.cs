@@ -73,7 +73,7 @@ namespace Overspray.UI
         /// </summary>
         private enum Row { Swatches, TakeCan, TakeExt, Clear }
 
-        private readonly Settings _cfg;
+        private readonly Paint.PaintConfig _cfg;
         private readonly Paint.Marks _marks;
 
         private int _pick = 3;
@@ -89,7 +89,7 @@ namespace Overspray.UI
         /// </summary>
         private bool _armed;
 
-        public Picker(Settings cfg, Paint.Marks marks)
+        public Picker(Paint.PaintConfig cfg, Paint.Marks marks)
         {
             _cfg = cfg;
             _marks = marks;

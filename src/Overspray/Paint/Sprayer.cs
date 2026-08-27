@@ -115,7 +115,7 @@ namespace Overspray.Paint
             new Plume("core", "ent_sht_extinguisher", 1.6f, true)
         };
 
-        private readonly Settings _cfg;
+        private readonly PaintConfig _cfg;
         private readonly Marks _marks;
 
         private int _nextDab;
@@ -123,7 +123,7 @@ namespace Overspray.Paint
         private int _cloud = -1;
         private bool _wasSpraying;
 
-        public Sprayer(Settings cfg, Marks marks)
+        public Sprayer(PaintConfig cfg, Marks marks)
         {
             _cfg = cfg;
             _marks = marks;

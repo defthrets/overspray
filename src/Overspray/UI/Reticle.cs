@@ -60,17 +60,8 @@ namespace Overspray.UI
             Hud.Box(left, top, w, h, c);
         }
 
-        /// <summary>Whether he is looking down the sights rather than merely holding it.</summary>
-        public static bool Aiming()
-        {
-            try
-            {
-                return Function.Call<bool>(Hash.IS_PLAYER_FREE_AIMING, Game.Player.Handle);
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        /// <summary>Moved into the engine, where both mods can reach it. See Paint.Aiming.</summary>
+        public static bool Aiming() => Paint.Aiming.Now();
+
     }
 }

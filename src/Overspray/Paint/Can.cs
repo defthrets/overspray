@@ -211,7 +211,7 @@ namespace Overspray.Paint
         /// really gone. The fraction falls out of the multiplier rather than being a second
         /// number that has to agree with it.
         /// </summary>
-        public void Feed(Settings cfg)
+        public void Feed(PaintConfig cfg)
         {
             try
             {

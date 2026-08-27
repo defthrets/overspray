@@ -40,11 +40,11 @@ namespace Overspray
                 // is a message about a class nobody wrote.
                 _cfg = Core.Settings.Load();
 
-                _marks = new Marks(_cfg);
-                _sprayer = new Sprayer(_cfg, _marks);
-                _picker = new Picker(_cfg, _marks);
+                _marks = new Marks(_cfg.Paint);
+                _sprayer = new Sprayer(_cfg.Paint, _marks);
+                _picker = new Picker(_cfg.Paint, _marks);
                 _can = new Can();
-                _spraycan = new Spraycan(_cfg);
+                _spraycan = new Spraycan(_cfg.Paint);
 
 
                 if (_cfg.Persist) Load();
@@ -95,13 +95,13 @@ namespace Overspray
                 // The can takes the nearest of the game's eight tints, and only while armed --
                 // an extinguisher that stays hot pink after you switch paint off is a mod
                 // leaving its fingerprints on somebody else's weapon.
-                if (_cfg.TintTheCan) _can.Match(_picker.Colour, _cfg.PaintEnabled);
+                if (_cfg.Paint.TintTheCan) _can.Match(_picker.Colour, _cfg.Paint.PaintEnabled);
 
                 // Unconditional, and safe to be: a weapon he is not holding does not spend
                 // ammo, so there is nothing to refund and Feed does nothing. Gating it on the
                 // extinguisher being out would mean resetting the tracker every other tick,
                 // and the reset also clears the tint, which would then be re-applied forever.
-                _can.Feed(_cfg);
+                _can.Feed(_cfg.Paint);
 
                 // The look, over the top of all of it. Reads the sprayer rather than the
                 // trigger so the animation and the paint can never disagree about whether he
@@ -114,7 +114,7 @@ namespace Overspray
                 // has no reason to draw its own reticle -- and free-aiming something you
                 // cannot see the aim point of is guesswork. Not while the panel is up, which
                 // is the one time the middle of the screen means nothing.
-                if (!_picker.IsOpen && Can.Out() && _cfg.PaintEnabled)
+                if (!_picker.IsOpen && Can.Out() && _cfg.Paint.PaintEnabled)
                 {
                     UI.Reticle.Draw(_picker.Colour, UI.Reticle.Aiming(), _sprayer.Spraying);
                 }
@@ -157,7 +157,7 @@ namespace Overspray
         /// </summary>
         private void Badge()
         {
-            if (!Can.Out() || !_cfg.PaintEnabled) return;
+            if (!Can.Out() || !_cfg.Paint.PaintEnabled) return;
 
             var c = _picker.Colour;
 

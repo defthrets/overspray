@@ -62,14 +62,14 @@ namespace Overspray.Paint
         /// </summary>
         private const int RightHand = 28422;
 
-        private readonly Settings _cfg;
+        private readonly PaintConfig _cfg;
 
         private Prop _can;
         private bool _spraying;
         private int _nextTry;
         private bool _moaned;
 
-        public Spraycan(Settings cfg)
+        public Spraycan(PaintConfig cfg)
         {
             _cfg = cfg;
         }
