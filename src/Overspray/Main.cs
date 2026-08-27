@@ -41,7 +41,7 @@ namespace Overspray
 
                 _marks = new Marks(_cfg);
                 _sprayer = new Sprayer(_cfg, _marks);
-                _picker = new Picker(_cfg);
+                _picker = new Picker(_cfg, _marks);
                 _can = new Can();
 
 

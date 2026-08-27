@@ -25,28 +25,32 @@ namespace Overspray.Core
         /// paint lands somewhere the plume visibly is not, which reads as a targeting bug
         /// rather than as spray.
         /// </summary>
-        public float Range = 5f;
+        public float Range = 10f;
 
         /// <summary>Splatters per second while the trigger is down.</summary>
         public float Rate = 9f;
 
         /// <summary>
-        /// How wide the splatter is at one metre, before the distance curve.
+        /// How wide the splatter is at one metre. Everything follows from this.
         ///
-        /// THE SIZE COMES FROM THE DISTANCE, and the curve is quadratic rather than a cone.
-        /// A cone is what a spray geometrically is -- width proportional to distance -- and it
-        /// is not what a spray LOOKS like: the plume holds together for the first stretch and
-        /// then blooms as it loses pressure, so the far end widens faster than the near end.
+        /// Width = SizeAtOneMetre x distance^SpreadPower. At 0.2 and a power of 1 that is:
         ///
-        /// 0.125 puts it at half a metre across at two metres and two metres across at four,
-        /// which is the shape somebody describes when they describe it from memory. A cone
-        /// through the same two points would have to be a metre wide at two metres, and looks
-        /// like a paint roller.
+        ///      1m  ->  0.2m
+        ///      5m  ->  1.0m
+        ///     10m  ->  2.0m
+        ///
+        /// A STRAIGHT LINE, which makes it a real cone -- width proportional to distance, which
+        /// is what a spray geometrically is. The first pass at this was quadratic because the
+        /// first set of estimates was; these three sit exactly on a line, so the power is 1 and
+        /// the maths is the honest one.
+        ///
+        /// Raise the power above 1 for a plume that blooms as it loses pressure, if the cone
+        /// reads too even in game.
         /// </summary>
-        public float SizeAtOneMetre = 0.125f;
+        public float SizeAtOneMetre = 0.2f;
 
-        /// <summary>2 is the bloom. 1 is a straight cone, if you want the geometric answer.</summary>
-        public float SpreadPower = 2f;
+        /// <summary>1 is a cone. Above 1 blooms toward the far end.</summary>
+        public float SpreadPower = 1f;
 
         /// <summary>The floor and ceiling, after the curve and the picker have had their say.</summary>
         public float MinSize = 0.08f;
