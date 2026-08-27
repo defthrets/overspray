@@ -106,11 +106,13 @@ namespace Overspray.Paint
         /// </summary>
         private static readonly Plume[] Clouds =
         {
-            new Plume(null, "ent_amb_shower_steam", 2.6f, false),
-            new Plume(null, "ent_amb_shower_steam", 2.6f, true),
-            new Plume(null, "ent_anim_cig_exhale_mth", 3.2f, true),
-            new Plume("scr_agency3b", "scr_agency3b_blding_smoke", 1.5f, true),
-            new Plume(null, "ent_anim_leaf_blower", 2.2f, true)
+            // The same three confirmed core effects, bigger and softer than the jet so they
+            // read as a cloud around it rather than a second line beside it. My earlier list
+            // here paired real effect names with GUESSED assets, which fails exactly as
+            // silently as an invented name does.
+            new Plume("core", "ent_sht_steam", 1.8f, true),
+            new Plume("core", "ent_sht_water", 1.6f, true),
+            new Plume("core", "ent_sht_extinguisher", 1.6f, true)
         };
 
         private readonly Settings _cfg;
