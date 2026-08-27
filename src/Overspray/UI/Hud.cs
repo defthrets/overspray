@@ -81,6 +81,70 @@ namespace Overspray.UI
         }
 
         /// <summary>
+        /// Text ending at a given edge, rather than starting at a given point.
+        ///
+        /// THE FIXED-OFFSET VERSION OF THIS IS A BUG WAITING FOR A LONGER WORD. Drawing a
+        /// right-hand value by starting it a guessed distance in from the edge works for
+        /// "ENTER" and pushes "SPRAY CAN" out through the side of the panel, because the guess
+        /// was really a measurement of one particular string.
+        ///
+        /// SET_TEXT_WRAP is not optional here and the native's own documentation says so:
+        /// right justification aligns to the wrap END, and with no wrap set that is the far
+        /// right of the SCREEN, not of the panel.
+        /// </summary>
+        public static void TextRight(string text, float right, float y, float scale, Color c,
+                                     int font = FontCondensed)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+
+            Function.Call(Hash.SET_TEXT_FONT, font);
+            Function.Call(Hash.SET_TEXT_SCALE, scale, scale);
+            Function.Call(Hash.SET_TEXT_COLOUR, (int)c.R, (int)c.G, (int)c.B, (int)c.A);
+            Function.Call(Hash.SET_TEXT_CENTRE, false);
+            Function.Call(Hash.SET_TEXT_JUSTIFICATION, 2);
+            Function.Call(Hash.SET_TEXT_WRAP, 0f, right);
+            Function.Call(Hash.SET_TEXT_DROP_SHADOW);
+
+            Function.Call(Hash.BEGIN_TEXT_COMMAND_DISPLAY_TEXT, "STRING");
+            Function.Call(Hash.ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME, text);
+            Function.Call(Hash.END_TEXT_COMMAND_DISPLAY_TEXT, right, y);
+        }
+
+        /// <summary>How bright a colour reads. Rec. 601, which is plenty for "can I see this".</summary>
+        public static float Luma(Color c)
+        {
+            return (0.299f * c.R + 0.587f * c.G + 0.114f * c.B) / 255f;
+        }
+
+        /// <summary>
+        /// The same colour, lifted until it can be read against a dark panel.
+        ///
+        /// A SWATCH CAN BE ANY COLOUR. TEXT CANNOT. Black paint drawn as black text on a black
+        /// panel is a blank space exactly where the name of the colour should be -- and naming
+        /// the colour is most of what the picker is for, since the can itself only ever shows
+        /// the nearest of eight tints.
+        ///
+        /// Lifted toward white rather than raised in value, so a dark blue stays blue instead
+        /// of going grey: pushing the channels up evenly is what turns near-black to charcoal.
+        /// The floor sits below every hue in the palette but well above black, so this is a
+        /// no-op for ten of the eleven and only ever fires where it has to.
+        /// </summary>
+        public static Color Legible(Color c)
+        {
+            const float Floor = 0.35f;
+
+            var l = Luma(c);
+            if (l >= Floor) return c;
+
+            var t = 1f - l / Floor;
+
+            return Color.FromArgb(c.A,
+                                  (int)(c.R + (255 - c.R) * t),
+                                  (int)(c.G + (255 - c.G) * t),
+                                  (int)(c.B + (255 - c.B) * t));
+        }
+
+        /// <summary>
         /// Hue, saturation and value to a colour.
         ///
         /// Written out rather than pulled from anywhere, because System.Drawing can go from a

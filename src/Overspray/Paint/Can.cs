@@ -140,6 +140,14 @@ namespace Overspray.Paint
                     Log.Info("Handed over an extinguisher.");
                 }
 
+                // Topped up whether it was new or not. Asking for a fresh one and getting the
+                // empty one you were already carrying is not what the button says it does.
+                var max = new OutputArgument();
+                Function.Call(Hash.GET_MAX_AMMO, me.Handle, hash, max);
+
+                var full = max.GetResult<int>();
+                if (full > 0) Function.Call(Hash.SET_PED_AMMO, me.Handle, hash, full, false);
+
                 if (equip) Function.Call(Hash.SET_CURRENT_PED_WEAPON, me.Handle, hash, true);
             }
             catch (Exception ex)
@@ -180,6 +188,85 @@ namespace Overspray.Paint
         public void Reset()
         {
             _lastTint = -1;
+            _lastAmmo = -1;
+            _owed = 0f;
+        }
+
+        // ---- how long it lasts --------------------------------------------------
+
+        private int _lastAmmo = -1;
+        private float _owed;
+
+        /// <summary>
+        /// Gives back some of what was just spent.
+        ///
+        /// BY REFUND RATHER THAN BY FLAG, deliberately. SET_PED_INFINITE_AMMO would be one
+        /// call and it would leave a switch flipped on the player's weapon that outlives this
+        /// mod being unloaded -- and the one promise this thing makes is that the extinguisher
+        /// is never actually modified. Watching what it spends and handing part of it back
+        /// stops the instant nothing is calling it.
+        ///
+        /// Refunding the whole amount is a can, which never runs down. Refunding two thirds is
+        /// a tank that lasts three times as long, because only the remaining third is ever
+        /// really gone. The fraction falls out of the multiplier rather than being a second
+        /// number that has to agree with it.
+        /// </summary>
+        public void Feed(Settings cfg)
+        {
+            try
+            {
+                var me = Game.Player.Character;
+                if (me == null || !me.Exists()) { _lastAmmo = -1; return; }
+
+                var hash = Function.Call<uint>(Hash.GET_HASH_KEY, Weapon);
+
+                if (!Function.Call<bool>(Hash.HAS_PED_GOT_WEAPON, me.Handle, hash, false))
+                {
+                    _lastAmmo = -1;
+                    _owed = 0f;
+                    return;
+                }
+
+                var now = Function.Call<int>(Hash.GET_AMMO_IN_PED_WEAPON, me.Handle, hash);
+
+                // First look, or he picked some up somewhere. Either way there is nothing owed.
+                if (_lastAmmo < 0 || now > _lastAmmo)
+                {
+                    _lastAmmo = now;
+                    return;
+                }
+
+                var spent = _lastAmmo - now;
+
+                if (spent <= 0) return;
+
+                var stretch = cfg.SprayCanLook && !cfg.CanRunsOut
+                    ? 0f                                    // a can: everything comes back
+                    : Math.Max(1f, cfg.ExtinguisherLasts);
+
+                var keep = stretch <= 0f ? 1f : 1f - 1f / stretch;
+
+                _owed += spent * keep;
+
+                // Whole units only -- ammo is an integer, and the remainder is carried rather
+                // than dropped so the ratio stays exact over a long hold instead of drifting
+                // short by up to one unit every tick.
+                var give = (int)_owed;
+
+                if (give > 0)
+                {
+                    Function.Call(Hash.ADD_AMMO_TO_PED, me.Handle, hash, give);
+                    _owed -= give;
+
+                    now = Function.Call<int>(Hash.GET_AMMO_IN_PED_WEAPON, me.Handle, hash);
+                }
+
+                _lastAmmo = now;
+            }
+            catch
+            {
+                // It empties at the stock rate. Nothing else depends on this.
+            }
         }
     }
 }

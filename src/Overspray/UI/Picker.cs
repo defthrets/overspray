@@ -63,7 +63,15 @@ namespace Overspray.UI
             "cyan", "blue", "purple", "pink", "white", "black"
         };
 
-        private enum Row { Swatches, Take, Look, Clear }
+        /// <summary>
+        /// WHICH TOOL YOU TAKE IS THE WHOLE CHOICE. There used to be one spawn button and a
+        /// separate switch for what it looked like, and that split one decision across two
+        /// rows -- worse, it let the two disagree, so you could take "an extinguisher" and be
+        /// handed the can's four-metre reach because the look was still set to can.
+        ///
+        /// Two buttons. The tool you ask for is the tool you get, reach and all.
+        /// </summary>
+        private enum Row { Swatches, TakeCan, TakeExt, Clear }
 
         private readonly Settings _cfg;
         private readonly Paint.Marks _marks;
@@ -149,16 +157,12 @@ namespace Overspray.UI
                     Close();
                     break;
 
-                case Row.Take:
-                    // Equipped as well as given: somebody who just asked for one wants it in
-                    // his hands, not filed in a wheel he now has to open.
-                    Paint.Can.Give(true);
-                    Hud.Sound("SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET");
+                case Row.TakeCan:
+                    Take(true);
                     break;
 
-                case Row.Look:
-                    _cfg.SprayCanLook = !_cfg.SprayCanLook;
-                    Hud.Sound("SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET");
+                case Row.TakeExt:
+                    Take(false);
                     break;
 
                 case Row.Clear:
@@ -176,6 +180,27 @@ namespace Overspray.UI
                     Log.Info("Every wall wiped from the picker.");
                     break;
             }
+        }
+
+        /// <summary>
+        /// Hands over the tool, and sets everything that follows from which one it is.
+        ///
+        /// The weapon is the same object either way -- the extinguisher, because it is what
+        /// carries the aim camera and the trigger. What the choice actually sets is the look
+        /// and, through it, the reach and the cone: four metres and a metre across for a can,
+        /// ten and two for a hose.
+        ///
+        /// Equipped as well as given, because somebody who just asked for one wants it in his
+        /// hands, not filed in a wheel he now has to open.
+        /// </summary>
+        private void Take(bool asCan)
+        {
+            _cfg.SprayCanLook = asCan;
+
+            Paint.Can.Give(true);
+
+            Hud.Sound("SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET");
+            Log.Info(asCan ? "Took a spray can." : "Took an extinguisher.");
         }
 
         private void Move(int by)
@@ -209,14 +234,15 @@ namespace Overspray.UI
             var top = 0.5f - h * 0.5f;
 
             Hud.Box(left, top, w, h, Back);
-            Hud.Box(left, top, w, 0.0035f, Colour);
+            // Legible, not raw: a black stripe on a black panel is a missing stripe.
+            Hud.Box(left, top, w, 0.0035f, Hud.Legible(Colour));
 
             var x = left + Hud.X(Pad);
             var inner = w - Hud.X(Pad) * 2f;
             var y = top + Pad;
 
             Hud.Text("OVERSPRAY", x, y, 0.42f, Ink);
-            Hud.Text(Names[_pick], x + inner - Hud.X(0.070f), y + 0.004f, 0.34f, Colour);
+            Hud.TextRight(Names[_pick], x + inner, y + 0.004f, 0.34f, Hud.Legible(Colour));
 
             y += 0.040f;
 
@@ -227,37 +253,53 @@ namespace Overspray.UI
             for (var i = 0; i < Colours.Length; i++)
             {
                 var sx = x + i * (each + gap);
-                var on = _row == Row.Swatches && i == _pick;
 
-                // The chosen one stands taller as well as brighter. On a row of ten small
+                // MARKED WHATEVER ROW YOU ARE ON. It used to light up only while the cursor
+                // was on the swatch row, so stepping down to a button left nothing on screen
+                // saying which colour was loaded -- and the one word that did say so is at the
+                // far end of the header.
+                var on = i == _pick;
+                var focused = _row == Row.Swatches;
+
+                // The chosen one stands taller as well as brighter. On a row of eleven small
                 // squares a highlight ring alone is easy to lose against a pale swatch.
                 var sh = on ? SwatchH : SwatchH - 0.014f;
                 var sy = y + (SwatchH - sh);
 
                 Hud.Box(sx, sy, each, sh, Colours[i]);
-                Hud.Frame(sx, sy, each, sh, 0.0012f, Line);
 
-                if (on) Hud.Frame(sx - 0.0022f, sy - 0.0022f, each + 0.0044f, sh + 0.0044f, 0.0026f, Ink);
+                // A near-black swatch on a near-black panel is an empty slot rather than a
+                // colour, so the outline brightens as the swatch darkens -- the border is the
+                // only thing saying there is anything there at all.
+                Hud.Frame(sx, sy, each, sh, 0.0012f,
+                          Hud.Luma(Colours[i]) < 0.18f ? Dim : Line);
+
+                if (on)
+                {
+                    Hud.Frame(sx - 0.0022f, sy - 0.0022f, each + 0.0044f, sh + 0.0044f, 0.0026f,
+                              focused ? Ink : Dim);
+                }
             }
 
             y += SwatchH + 0.020f;
 
-            // ---- take one ----
+            // ---- take one, or the other ----
+            //
+            // The right-hand word says which one you are already carrying, so the panel
+            // answers "what have I got" without you having to close it and look.
             var has = Paint.Can.Has();
 
-            Button(x, y, inner, _row == Row.Take,
-                   has ? "TAKE ANOTHER EXTINGUISHER" : "TAKE AN EXTINGUISHER",
-                   "ENTER", Ink, Colour);
+            Button(x, y, inner, _row == Row.TakeCan,
+                   "TAKE A SPRAY CAN",
+                   has && _cfg.SprayCanLook ? "IN HAND" : "ENTER",
+                   Ink, Hud.Legible(Colour));
 
             y += ButtonH + 0.008f;
 
-            // ---- what he holds ----
-            //
-            // Named by what you get rather than by the setting behind it. "SprayCanLook: on"
-            // is a variable; "SPRAY CAN" is the thing in his hand.
-            Button(x, y, inner, _row == Row.Look,
-                   "IN HIS HAND", _cfg.SprayCanLook ? "SPRAY CAN" : "EXTINGUISHER",
-                   Ink, Colour);
+            Button(x, y, inner, _row == Row.TakeExt,
+                   "TAKE AN EXTINGUISHER",
+                   has && !_cfg.SprayCanLook ? "IN HAND" : "ENTER",
+                   Ink, Hud.Legible(Colour));
 
             y += ButtonH + 0.008f;
 
@@ -270,7 +312,7 @@ namespace Overspray.UI
                        : "CLEAR EVERY WALL" + (marks > 0 ? "  (" + marks + ")" : ""),
                    _armed ? "SURE?" : "ENTER",
                    _armed ? Warn : Ink,
-                   _armed ? Warn : Colour);
+                   _armed ? Warn : Hud.Legible(Colour));
 
             Hud.Text("ARROWS  choose      ENTER  take      BACKSPACE  close",
                      x, top + h - 0.024f, 0.27f, Dim);
@@ -285,7 +327,12 @@ namespace Overspray.UI
             if (active) Hud.Frame(x, y, w, ButtonH, 0.0026f, labelOn);
 
             Hud.Text(label, x + Hud.X(0.014f), y + 0.011f, 0.35f, active ? labelOn : Dim);
-            Hud.Text(hint, x + w - Hud.X(0.042f), y + 0.012f, 0.30f, active ? hintColour : Dim);
+
+            // Ends at the button's inner edge whatever the word is. The old version started it
+            // a fixed distance in from the right, which is a measurement of the word "ENTER"
+            // dressed up as a layout rule -- "SPRAY CAN" is wider and went out through the side.
+            Hud.TextRight(hint, x + w - Hud.X(0.014f), y + 0.012f, 0.30f,
+                          active ? hintColour : Dim);
         }
 
         // ---- input -------------------------------------------------------------

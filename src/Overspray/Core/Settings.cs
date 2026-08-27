@@ -124,6 +124,22 @@ namespace Overspray.Core
         public float CanMaxSize = 1.00f;
 
         /// <summary>
+        /// How much longer a tank lasts than the game gives it. 1 is stock.
+        ///
+        /// The stock tank is sized for putting out a car fire, not for painting a warehouse
+        /// wall, so it empties about a third of the way into anything worth doing.
+        /// </summary>
+        public float ExtinguisherLasts = 3f;
+
+        /// <summary>
+        /// Whether the spray can ever empties. It does not.
+        ///
+        /// A can of paint in a mod about painting should not send you back to a menu halfway
+        /// up a wall. That is friction with nothing on the other side of it.
+        /// </summary>
+        public bool CanRunsOut = false;
+
+        /// <summary>
         /// Whichever tool is actually in his hand.
         ///
         /// The sprayer reads these and never the underlying pair, so there is exactly one
@@ -176,6 +192,9 @@ namespace Overspray.Core
                 s.CanMaxSize = Clamp(ini.GetFloat("Paint", "CanMaxSize", s.CanMaxSize), 0.05f, 8f);
 
                 if (s.MaxSize < s.MinSize) s.MaxSize = s.MinSize;
+                s.ExtinguisherLasts = Clamp(ini.GetFloat("Paint", "ExtinguisherLasts", s.ExtinguisherLasts), 1f, 50f);
+                s.CanRunsOut = ini.GetBool("Paint", "CanRunsOut", s.CanRunsOut);
+
                 if (s.CanMaxSize < s.CanMinSize) s.CanMaxSize = s.CanMinSize;
             }
             catch (Exception ex)
