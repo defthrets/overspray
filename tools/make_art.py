@@ -35,9 +35,6 @@ PAD = 90             # room for the halo to fall off into
 
 random.seed(20260827)
 
-# How many frames the tile's spray loops through.
-TILE_FRAMES = 8
-
 
 def wordmark(text):
     font = ImageFont.truetype(FONT, SIZE)
@@ -175,7 +172,7 @@ def tile(_tin, phase=None):
     the size that matters. An icon is read in about a tenth of a second. Three dots say spray;
     two thousand say nothing.
 
-    phase is 0..1 round the animation loop, or None for the still frame.
+    phase is 0..1 round a loop, or None for the still frame the tile actually uses.
     """
     S = 512
     img = Image.new('L', (S, S), 0)
@@ -410,15 +407,13 @@ def main():
         g.save(os.path.join(other, 'graffiti.png'))
         tin.save(os.path.join(other, 'spraycan.png'))
 
-        # The still one, for anything wanting a single file, and the loop for the tile.
+        # One still file. The animated version -- eight frames swapped by a star in the
+        # filename -- is in the history if it is ever wanted again; the tile reads better
+        # holding still next to eight other tiles that do.
         tile(tin).save(os.path.join(other, 'sprayapp.png'))
 
-        for i in range(TILE_FRAMES):
-            tile(tin, i / float(TILE_FRAMES)).save(
-                os.path.join(other, 'sprayapp%d.png' % (i + 1)))
-
-        print('  hoodrich   graffiti.png %dx%d   spraycan.png %dx%d   sprayapp + %d frames'
-              % (g.size + tin.size + (TILE_FRAMES,)))
+        print('  hoodrich   graffiti.png %dx%d   spraycan.png %dx%d   sprayapp.png'
+              % (g.size + tin.size))
         print('    graffiti aspect %.4f' % (g.size[0] / float(g.size[1])))
     else:
         print('  hoodrich   not beside this repo; skipped')

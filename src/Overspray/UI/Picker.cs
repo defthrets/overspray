@@ -116,6 +116,17 @@ namespace Overspray.UI
         /// </summary>
         private bool _armed;
 
+        /// <summary>
+        /// Whether the ini still has the stand-down set, so turning the spray ON can retire it.
+        ///
+        /// Not shown anywhere. It used to spell itself out on the row -- "OFF, POSTED UP HAS
+        /// IT ON THE PHONE" -- which is a paragraph where a state belongs. ON and OFF is what
+        /// a switch says; the reason it started off is in the log, once, where a reason goes.
+        /// </summary>
+        public bool StandDown { set { _standDown = value; } }
+
+        private bool _standDown;
+
         public Picker(Paint.PaintConfig cfg, Paint.Marks marks)
         {
             _cfg = cfg;
@@ -123,15 +134,6 @@ namespace Overspray.UI
         }
 
         public bool IsOpen { get; private set; }
-
-        /// <summary>
-        /// Whether Posted Up is installed beside this, set by Main.
-        ///
-        /// Only ever used to EXPLAIN things. Somebody who opens this and finds the spray
-        /// switched off deserves to be told why on the row itself, not left to guess or to go
-        /// and read a log -- being off is the one state that looks identical to being broken.
-        /// </summary>
-        public bool AlongsidePostedUp;
 
         public Color Colour => Colours[_pick];
 
@@ -271,7 +273,7 @@ namespace Overspray.UI
                 // off at every launch on purpose, so without this, choosing to run both would
                 // be undone by the next load and look like the switch simply did not work.
                 // Using it is the explicit decision that retires the automatic default.
-                if (_cfg.PaintEnabled && AlongsidePostedUp)
+                if (_cfg.PaintEnabled && _standDown)
                 {
                     IniFile.SetValue(Paths.Ini, "General", "StandDownForPostedUp", "false");
 
@@ -459,11 +461,7 @@ namespace Overspray.UI
             // Everything else does stop: no marks, no jet, no reticle, no can in his hand and
             // no hidden weapon. The extinguisher goes back to being the game's.
             Button(x, y, inner, _row == Row.Paint,
-                   _cfg.PaintEnabled
-                       ? "SPRAY PAINT"
-                       : AlongsidePostedUp
-                           ? "SPRAY PAINT  --  OFF, POSTED UP HAS IT ON THE PHONE"
-                           : "SPRAY PAINT  --  OFF",
+                   "SPRAY PAINT",
                    _cfg.PaintEnabled ? "ON" : "OFF",
                    ink,
                    Hud.Fade(_cfg.PaintEnabled ? Hud.Legible(Colour) : Warn, eased), eased);

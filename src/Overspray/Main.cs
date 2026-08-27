@@ -77,7 +77,7 @@ namespace Overspray
                              "works -- turn SPRAY PAINT on in there if you want both.");
                 }
 
-                _picker.AlongsidePostedUp = _alongsidePostedUp;
+                _picker.StandDown = _alongsidePostedUp && _cfg.StandDownForPostedUp;
 
                 if (_cfg.Persist) Load();
 
