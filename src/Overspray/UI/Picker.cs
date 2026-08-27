@@ -237,6 +237,10 @@ namespace Overspray.UI
         {
             _cfg.SprayCanLook = asCan;
 
+            // Already true here by default -- an extinguisher paints, that is the whole mod --
+            // but set explicitly so the engine's gate has one obvious owner in each host.
+            _cfg.Armed = true;
+
             Paint.Can.Give(true);
 
             Hud.Sound("SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET");
