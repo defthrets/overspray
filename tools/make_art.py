@@ -6,14 +6,13 @@
 # so one file is the dim mark on a panel header and the same file is a bright one in whatever
 # the player has loaded in the can. Baking a colour in would mean shipping eleven of each.
 #
-# THE LOGO SPRAYS ITSELF, and that is the whole idea rather than a flourish: overspray IS the
-# paint that lands outside where you aimed. So the letters are solid and a real speckle halo
-# falls off around them, densest at the edges, thinning outward -- which is what a can actually
-# leaves on a wall. A drop shadow would have been easier and would have said nothing.
+# THE WORDMARK IS NOT SET, IT IS DRAWN. It used to be Segoe Script sheared and dilated, with a
+# sprayed halo thrown round it, and it never looked like a tag -- because a script FACE is one
+# pen width everywhere and its letters are correct, and a handstyle is neither of those things.
 #
-# Impact, because it is the only heavy condensed face that ships on a stock Windows box, and a
-# wordmark that needs a font nobody has is a wordmark that renders as a fallback and looks like
-# a mistake. Tracked out, since Impact sets almost solid and a sprayed mark wants air in it.
+# Every letter is a few polylines now, swept with a flat chisel nib. That one change is what
+# does it: verticals come out fat, horizontals come out thin, and every stroke ends on a slant,
+# none of which a font can be talked into. See handstyle.
 #
 #   python tools/make_art.py
 
@@ -21,7 +20,7 @@ import math
 import os
 import random
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(HERE, 'data', 'icons')
@@ -234,152 +233,201 @@ def tile(_tin, phase=None):
 
 
 
-SCRIPT = os.path.join(os.environ.get('WINDIR', r'C:\Windows'), 'Fonts', 'segoescb.ttf')
+# ------------------------------------------------------------------- handstyle
+#
+# The wordmark as a marker tag, drawn stroke by stroke rather than set in a font.
+#
+# THIS USED TO BE SEGOE SCRIPT, sheared and dilated, and it was never going to get there. A
+# script FACE is one pen width everywhere and its letters are correct; a handstyle is neither.
+# What makes a tag look like a tag is a flat nib -- verticals come out fat, horizontals come
+# out thin, and every stroke ends on a slant because the tip is a chisel and not a point. No
+# amount of thickening a font produces that, because thickening is uniform by definition.
+#
+# So: every letter is a few polylines, and every polyline is swept with a rectangular nib. The
+# widths fall out of the geometry instead of being drawn in.
+#
+# STROKES ACCUMULATE. Each goes down at part strength and overlaps add, so a crossbar over a
+# stem is denser than either -- which is what a marker does when it crosses itself, and it is
+# the detail that stops the whole thing reading as a vector shape.
+
+NIB_W = 0.225                # the chisel, across, in glyph units
+NIB_T = 0.075                # and its thickness
+NIB_A = math.radians(-16)    # held just off horizontal, the way a right hand holds one
+
+SLANT = 0.26                 # how far the whole word leans
+
+# CONDENSED, WHICH IS WHERE THE PROPORTIONS COME FROM. Nine letters set at their natural width
+# make a strip four and a half times as wide as it is tall, and the reference is two and a
+# half. The first attempt at closing that gap was to overlap the letters harder, and it turned
+# the word into a solid block nobody could read -- the reference's letters interlock at the
+# edges but every one of them is legible.
+#
+# So the letters are narrowed instead, which is what a real hand does when it wants a word to
+# fit: tall and thin, leaning, touching at the corners.
+CONDENSE = 0.80
 
 
-def tagmark(text, size=250, slant=0.20, fatten=13):
+def _hull(pts):
+    """Andrew monotone chain. The region a convex nib sweeps IS the hull of its two ends."""
+    pts = sorted(set(pts))
+    if len(pts) < 3:
+        return pts
+
+    def half(ps):
+        out = []
+        for p in ps:
+            while len(out) > 1:
+                (ax, ay), (bx, by) = out[-2], out[-1]
+                if (bx - ax) * (p[1] - ay) - (by - ay) * (p[0] - ax) > 0:
+                    break
+                out.pop()
+            out.append(p)
+        return out
+
+    return half(pts)[:-1] + half(list(reversed(pts)))[:-1]
+
+
+def _nib(d, p0, p1, w, t, ang, ink):
+    """One segment of a stroke, swept with a rectangular tip."""
+    cx, sy = math.cos(ang), math.sin(ang)
+
+    corners = [(cx * w / 2 - sy * t / 2, sy * w / 2 + cx * t / 2),
+               (cx * w / 2 + sy * t / 2, sy * w / 2 - cx * t / 2),
+               (-cx * w / 2 + sy * t / 2, -sy * w / 2 - cx * t / 2),
+               (-cx * w / 2 - sy * t / 2, -sy * w / 2 + cx * t / 2)]
+
+    pts = [(p0[0] + ox, p0[1] + oy) for ox, oy in corners] + \
+          [(p1[0] + ox, p1[1] + oy) for ox, oy in corners]
+
+    d.polygon(_hull(pts), fill=ink)
+
+
+# Every glyph as polylines, in a box where y=0 is the cap line and y=1 the baseline. Angular
+# on purpose: a handstyle has no curves in it, it has corners taken at speed.
+GLYPHS = {
+    'O': (0.92, [[(0.60, 0.02), (0.20, 0.16), (0.04, 0.55), (0.16, 0.90), (0.50, 1.00),
+                  (0.82, 0.82), (0.90, 0.40), (0.72, 0.08), (0.46, 0.03)]]),
+    'V': (0.86, [[(0.04, 0.02), (0.42, 1.00), (0.84, 0.00)]]),
+    'E': (0.78, [[(0.74, 0.06), (0.16, 0.10)],
+                 [(0.16, 0.10), (0.22, 1.00)],
+                 [(0.19, 0.52), (0.60, 0.46)],
+                 [(0.22, 1.00), (0.76, 0.92)]]),
+    'R': (0.90, [[(0.08, 1.02), (0.22, 0.02)],
+                 [(0.22, 0.02), (0.78, 0.14), (0.62, 0.50), (0.20, 0.54)],
+                 [(0.40, 0.50), (0.86, 1.02)]]),
+    'S': (0.84, [[(0.82, 0.14), (0.44, 0.00), (0.10, 0.24), (0.52, 0.50),
+                  (0.78, 0.72), (0.42, 1.00), (0.04, 0.86)]]),
+    'P': (0.86, [[(0.10, 1.16), (0.26, 0.02)],
+                 [(0.26, 0.02), (0.84, 0.16), (0.70, 0.54), (0.22, 0.58)]]),
+    'A': (0.88, [[(0.02, 1.02), (0.44, 0.00), (0.86, 1.02)],
+                 [(0.16, 0.70), (0.74, 0.64)]]),
+    'Y': (0.90, [[(0.02, 0.02), (0.44, 0.60)],
+                 [(0.88, 0.00), (0.44, 0.60)],
+                 [(0.44, 0.60), (0.38, 1.06)]]),
+    'G': (0.92, [[(0.86, 0.14), (0.52, 0.00), (0.14, 0.22), (0.10, 0.72),
+                  (0.44, 1.00), (0.82, 0.86), (0.86, 0.56)],
+                 [(0.86, 0.56), (0.52, 0.58)]]),
+    'F': (0.76, [[(0.72, 0.04), (0.18, 0.08)],
+                 [(0.18, 0.08), (0.26, 1.04)],
+                 [(0.21, 0.50), (0.62, 0.44)]]),
+    'I': (0.34, [[(0.20, 0.02), (0.14, 1.02)]]),
+    'T': (0.74, [[(0.02, 0.08), (0.72, 0.02)],
+                 [(0.40, 0.05), (0.30, 1.04)]]),
+}
+
+
+def handstyle(text, unit=190, gap=-0.04):
     """
-    The wordmark as a handstyle tag: fat connected strokes, drips, and flourishes.
+    The word, laid out and swept.
 
-    NOT A GRAFFITI FONT, because no graffiti font ships on Windows and a wordmark that needs a
-    font nobody has renders as a fallback. Segoe Script Bold is the nearest thing on a stock
-    box -- connected, flowing, already close to a marker hand -- and everything that makes it
-    read as a TAG rather than as handwriting is done to it afterwards:
-
-      SHEARED, because a tag leans. Upright script is a wedding invitation.
-      FATTENED with a max filter, which is what turns a pen line into a marker stroke. A
-        stroke-width setting cannot do this: it would outline the glyph, and a tag has no
-        outline, it has weight.
-      DRIPPED from the bottom of the strokes, tapering, with a bead on the end. This is the
-        single detail that says spray paint rather than ink.
-      FLOURISHED with arrows and tick marks, which is the grammar of the thing -- the reference
-        has them above, below and at both ends, and without them a tag is just a word.
+    LETTERS OVERLAP, which is why the gap is negative. A tag is written without lifting much,
+    so its letters run into each other and share space -- setting them apart at even intervals
+    is the other thing that makes a word read as type.
     """
-    font = ImageFont.truetype(SCRIPT, size)
+    rng = random.Random(4471)
 
-    # ASYMMETRIC PADDING. Square margins put the word in the middle of a lot of nothing and
-    # pushed the flourishes -- which are placed as fractions of the canvas -- out to the
-    # corners, where they read as separate marks instead of as part of the tag. Tight at the
-    # sides, room above for the arrow, more below because that is where the drips go.
-    padx = int(size * 0.42)
-    top = int(size * 0.62)
-    bot = int(size * 1.05)
+    placed = []
+    pen = 0.0
 
-    box = font.getbbox(text)
-    W = box[2] - box[0] + padx * 2
-    H = box[3] - box[1] + top + bot
+    for ch in text:
+        w, strokes = GLYPHS[ch]
+
+        # A wobble on every letter. A tag written by a hand does not sit on a ruled line, and a
+        # baseline that is exactly flat reads as type however good the letters are.
+        dy = (rng.random() - 0.5) * 0.10
+        sc = 0.94 + rng.random() * 0.12
+
+        placed.append((pen, dy, sc, strokes))
+        pen += w * sc * CONDENSE + gap
+
+    span = pen - gap
+
+    # An arrow going in on the left, ticks coming off on the right. This is the grammar of the
+    # thing; without them a tag is a word in a funny hand.
+    marks = [[(-0.52, 1.06), (-0.14, 0.90)],
+             [(-0.48, 0.86), (-0.18, 0.82)],
+             [(span + 0.20, 0.30), (span + 0.44, 0.04)],
+             [(span + 0.14, 0.62), (span + 0.38, 0.38)]]
+
+    pad = 0.24
+
+    lo_x, hi_x = -0.58 - pad, span + 0.48 + pad
+    # Down to the P's descender and no further. The box used to reach 1.60 to hold a long
+    # sweep under the word; with that gone, the same number is a third of the picture spent on
+    # nothing -- and the panel scales this to a fixed height, so empty space at the bottom is
+    # paid for by the letters being smaller.
+    lo_y, hi_y = -0.10 - pad, 1.22 + pad
+
+    # The lean carries the top rightward, so the box has to allow for how far it will go.
+    lean = SLANT * (hi_y - lo_y)
+
+    W = int((hi_x - lo_x + lean) * unit)
+    H = int((hi_y - lo_y) * unit)
 
     img = Image.new('L', (W, H), 0)
-    ImageDraw.Draw(img).text((padx - box[0], top - box[1]), text, font=font, fill=255)
 
-    # Lean. Positive shear pulls the top to the right, which is the direction a right hand
-    # naturally slants.
-    img = img.transform((W, H), Image.AFFINE, (1, slant, -slant * H * 0.5, 0, 1, 0),
-                        resample=Image.BICUBIC)
+    def put(base, strokes, ox=0.0, oy=0.0, sc=1.0, ink=190, narrow=True):
+        """
+        One letter's worth, on its own layer, so its own overlaps add rather than replace.
 
-    # Weight. Dilate, then a whisker of blur so the edges are not stepped.
-    img = img.filter(ImageFilter.MaxFilter(fatten if fatten % 2 else fatten + 1))
-    img = img.filter(ImageFilter.GaussianBlur(1.2))
-    img = img.point(lambda v: 255 if v > 96 else 0)
+        NARROW IS FOR LETTERS ONLY. The pen advances by condensed widths, so a letter's origin
+        is already in final space while its own points are still in glyph space and need
+        narrowing on the way through. The flourishes are written directly in final space --
+        they are placed relative to the finished word, not to a glyph box -- so narrowing them
+        again dragged them back inside it, which is how the ticks ended up sitting on the last
+        letter instead of beside it.
+        """
+        layer = Image.new('L', (W, H), 0)
+        ld = ImageDraw.Draw(layer)
 
-    d = ImageDraw.Draw(img)
-    px = img.load()
+        for line in strokes:
+            pts = []
 
-    # ---- drips ----
-    #
-    # Off the LOWEST ink in a column, so they hang from the real bottom of a stroke rather
-    # than from wherever a fixed offset happened to land.
-    cols = []
-    for x in range(0, W, 3):
-        low = -1
-        for y in range(H - 1, -1, -1):
-            if px[x, y]:
-                low = y
-                break
-        cols.append((x, low))
+            for gx, gy in line:
+                x = gx * sc * (CONDENSE if narrow else 1.0) + ox - lo_x
+                y = gy * sc + oy - lo_y
 
-    picked = []
-    for x, low in cols:
-        if low < 0:
-            continue
-        # Only from a local bottom, and never two drips on top of each other.
-        # FEWER AND FURTHER APART. Every third column with a 30% chance gave a dozen drips at
-        # even spacing, which reads as a comb rather than as paint running. A real one has a
-        # handful, clustered where the hand lingered.
-        if picked and x - picked[-1][0] < size * 0.85:
-            continue
-        if random.random() < 0.42:
-            picked.append((x, low))
+                # Lean applied to the POINTS, not to the finished picture. Shearing the image
+                # shears the chisel with it, and then every flat end points the wrong way.
+                pts.append(((x + (hi_y - lo_y - y) * SLANT) * unit, y * unit))
 
-    for x, low in picked:
-        # Wildly uneven. Two of these should be barely a bead and one should be a long run,
-        # which is what stops a row of drips looking measured out.
-        run = int(size * random.choice((0.10, 0.14, 0.30, 0.45, 0.72, 0.95))
-                  * random.uniform(0.85, 1.15))
-        wide = size * random.uniform(0.035, 0.055)
+            for a, b in zip(pts, pts[1:]):
+                _nib(ld, a, b, NIB_W * unit * sc, NIB_T * unit * sc, NIB_A, ink)
 
-        for i in range(run):
-            t = i / float(run)
-            r = wide * (1.0 - t * 0.55)
-            yy = low + i
-            d.ellipse((x - r, yy - r, x + r, yy + r), fill=255)
+        return ImageChops.add(base, layer)
 
-        bead = wide * random.uniform(0.9, 1.4)
-        d.ellipse((x - bead, low + run - bead, x + bead, low + run + bead), fill=255)
+    for ox, dy, sc, strokes in placed:
+        img = put(img, strokes, ox, dy, sc, ink=168 + rng.randrange(0, 46))
 
-    return img, d, W, H, size
+    img = put(img, marks, ink=214, narrow=False)
 
-
-def flourish(img, d, W, H, size):
-    """The arrows and ticks. The grammar that makes a word a tag."""
-    def stroke(pts, wide):
-        d.line(pts, fill=255, width=int(wide), joint='curve')
-
-    def arrow(x0, y0, x1, y1, wide, head):
-        stroke([(x0, y0), (x1, y1)], wide)
-        ang = math.atan2(y1 - y0, x1 - x0)
-        for turn in (2.6, -2.6):
-            hx = x1 + math.cos(ang + turn) * head
-            hy = y1 + math.sin(ang + turn) * head
-            stroke([(x1, y1), (hx, hy)], wide)
-
-    w = size * 0.075
-    head = size * 0.30
-
-    # Above, pointing right, with the dash-dash the reference has trailing off it.
-    arrow(W * 0.36, H * 0.20, W * 0.55, H * 0.13, w, head)
-    for i, fx in enumerate((0.60, 0.65)):
-        stroke([(W * fx, H * 0.12), (W * (fx + 0.028), H * 0.115)], w * 0.9)
-
-    # Below, pointing right, with the dashes LEADING it instead -- mirrored on purpose so the
-    # two do not read as the same stamp used twice.
-    for fx in (0.30, 0.35):
-        stroke([(W * fx, H * 0.88), (W * (fx + 0.028), H * 0.882)], w * 0.9)
-    arrow(W * 0.41, H * 0.885, W * 0.60, H * 0.90, w, head)
-
-    # Double ticks at both ends, leaning with the letters.
-    for fx, fy in ((0.055, 0.30), (0.085, 0.28), (0.925, 0.62), (0.955, 0.60)):
-        stroke([(W * fx, H * fy), (W * (fx + 0.022), H * (fy - 0.13))], w)
-
-    # And a little spatter, because a real one always has some.
-    # Clustered near the letters rather than sprinkled over the whole rectangle -- overspray
-    # lands close to what made it, which is the entire idea the mod is named after.
-    for _ in range(34):
-        x = random.uniform(W * 0.12, W * 0.90)
-        y = random.gauss(H * 0.52, H * 0.16)
-
-        if not (H * 0.14 < y < H * 0.94):
-            continue
-
-        r = random.uniform(1.5, size * 0.020)
-        d.ellipse((x - r, y - r, x + r, y + r), fill=255)
-
-    return img
+    # A whisker of blur. The nib polygons are exact, and exact is the one thing a marker on a
+    # wall never is.
+    return img.filter(ImageFilter.GaussianBlur(unit * 0.006))
 
 
 def tag(text):
-    img, d, W, H, size = tagmark(text)
-    img = flourish(img, d, W, H, size)
+    img = handstyle(text)
 
     out = Image.merge('RGBA', (Image.new('L', img.size, 255),) * 3 + (img,))
     return out.crop(out.getbbox())

@@ -33,7 +33,7 @@ namespace Overspray.UI
         /// would have kept the FILE the same size and shrunk the reading matter by half.
         /// </summary>
         private const float LogoH = 0.066f;
-        private const float LogoAspect = 3.1416f;
+        private const float LogoAspect = 5.5664f;
         private const float CanH = 0.052f;
         private const float CanAspect = 0.4412f;
 
