@@ -466,25 +466,28 @@ def cap(width):
     return art.resize((wide, tall), Image.LANCZOS)
 
 
-def cap_tile(hole=95):
+def cap_tile(hole=76):
     """
     The stock cap as a phone TILE, which is a different drawing from the chip in the picker.
 
-    EVERY TILE IS 64x64 AND THE DRAW CALL FORCES THE SQUARE. The chip icon is two thirds as
-    wide as it is tall, so handed to the wheel it comes out a squat, stretched cap -- the same
-    trap sprayapp.png exists to avoid for the can, and the comment next to that one says so.
+    A CAP IS TALLER THAN IT IS WIDE and this has to stay that way. The first go at it made the
+    pad wider than tall, on the reasoning that a wheel tile is forced square and the portrait
+    chip would be stretched to fit. Half of that is true and the conclusion does not follow:
+    the FILE is square either way. This one returns a 64x64 canvas with the cap centred in it,
+    so the cap inside can be any proportion it likes and simply carries margins at the sides.
+    What gets stretched is a non-square file, which is what the picker's chip is.
 
-    So this is a separate shape of the same object: squarer, much heavier in the line, and a
-    bigger hole. It has to hold down to sixteen pixels, which is the only test a tile has to
-    pass, and the chip's 22-unit stroke disappears at that size.
+    So the only thing this really changes is WEIGHT. The chip's 22-unit stroke is drawn for a
+    thirty-pixel square and disappears at sixteen, which is the one size a tile has to survive.
+    Heavier line, slightly bigger hole, same shape.
     """
     big = Image.new('RGBA', (S, S), CLEAR)
     d = ImageDraw.Draw(big)
 
     mid = S // 2
 
-    body_w, body_h = 400, 330
-    stem_w, stem_h = 110, 116
+    body_w, body_h = 296, 384
+    stem_w, stem_h = 100, 96
     stroke = 34
 
     top = (S - (body_h + stem_h)) // 2
