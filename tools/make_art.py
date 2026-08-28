@@ -6,13 +6,13 @@
 # so one file is the dim mark on a panel header and the same file is a bright one in whatever
 # the player has loaded in the can. Baking a colour in would mean shipping eleven of each.
 #
-# THE WORDMARK IS NOT SET, IT IS DRAWN. It used to be Segoe Script sheared and dilated, with a
-# sprayed halo thrown round it, and it never looked like a tag -- because a script FACE is one
-# pen width everywhere and its letters are correct, and a handstyle is neither of those things.
+# THE WORDMARK MATCHES POSTED UP'S, which is the point of it: arched varsity block, Impact
+# widened and tracked out, laid glyph by glyph along a circle. Three marks in one family -- the
+# panel header here, the Graffiti masthead in Posted Up, and Posted Up's own logo.
 #
-# Every letter is a few polylines now, swept with a flat chisel nib. That one change is what
-# does it: verticals come out fat, horizontals come out thin, and every stroke ends on a slant,
-# none of which a font can be talked into. See handstyle.
+# It has been a sprayed Segoe Script, a chisel-nib handstyle and a round-marker one on the way
+# here. All three are in the history if they are ever wanted; none of them sat beside Posted
+# Up's logo and looked like they belonged to the same pair of mods. See arched.
 #
 #   python tools/make_art.py
 
@@ -235,175 +235,94 @@ def tile(_tin, phase=None):
 
 
 
-# ------------------------------------------------------------------- handstyle
+# --------------------------------------------------------------------- arched
 #
-# The wordmark, drawn stroke by stroke rather than set in a font.
+# The wordmark, as an arched block of type.
 #
-# A ROUND MARKER, NOT A CHISEL. The first version of this swept a flat nib, which gives fat
-# verticals, thin horizontals and slanted stroke ends -- a completely different hand from the
-# one wanted here. This one is a fibre tip held square: the same width whatever direction it
-# travels, with round ends and round corners, which is why every stroke here is one weight.
+# THE SAME TREATMENT AS POSTED UP'S, deliberately, so the three marks read as one family: the
+# panel header here, the Graffiti app's masthead in Posted Up, and Posted Up's own logo. The
+# original is hoodrich/tools/make_logo.py and the four numbers below are copied from it --
+# SWEEP, SQUEEZE, TRACK and the face. If those ever move there they have to move here too, or
+# the family quietly stops being one.
 #
-# UPRIGHT AND SPIKY. The letters are straight segments meeting at hard angles, standing up
-# rather than leaning, and set apart rather than interlocked -- so the shapes read one at a
-# time. What stops that being a stencil is that nothing is quite true: every point is nudged,
-# and every long run is broken in the middle and nudged again, so the lines bow the way a hand
-# bows them.
+# Impact, because the reference is a varsity block and no varsity face ships on a stock Windows
+# box. Impact is the only heavy condensed one that does. Widened a little and TRACKED OUT,
+# which is the part that matters: Impact sets almost solid, and without air between the letters
+# an arch reads as a squashed headline rather than as a wordmark.
 #
-# No font is involved anywhere. There is no graffiti face on a stock Windows box, and a
-# wordmark that needs a font nobody has is a wordmark that renders as a fallback.
+# LAID ALONG A CIRCLE GLYPH BY GLYPH, not warped as a finished image. Warping a bitmap smears
+# the strokes, and at header size a smeared stroke is the only thing you can see.
 
-WEIGHT = 0.105        # stroke width, in glyph heights
-WOBBLE = 0.011        # how far off true each point lands
-SLANT = 0.0           # upright. This hand does not lean.
-CONDENSE = 1.0
-
-
-# Every glyph as polylines in a box where y=0 is the top of the letter and y=1 the baseline;
-# anything past 1 is a descender. 'dots' are drawn as blobs rather than swept.
-GLYPHS = {
-    'O': (0.62, [[(0.13, 0.10), (0.50, 0.03), (0.60, 0.32), (0.57, 0.80), (0.46, 1.02),
-                  (0.15, 1.00), (0.06, 0.70), (0.09, 0.28), (0.13, 0.10)]],
-          [(0.32, 0.56)]),
-
-    # Two strokes and nothing else. It had a foot running right off the vertex, which put a
-    # horizontal along the baseline between this letter and the next and read as a join.
-    'V': (0.80, [[(0.04, 0.05), (0.40, 0.99), (0.76, 0.07)]], []),
-
-    # The lower half is a Z, and it has to be obvious about it: the middle reaches most of
-    # the way across before turning back, so the diagonal is long enough to read as a stroke
-    # of its own rather than as a kink in the stem.
-    'E': (0.72, [[(0.68, 0.07), (0.10, 0.11), (0.13, 0.49), (0.64, 0.44),
-                  (0.11, 0.68), (0.16, 1.00), (0.72, 0.94)]], []),
-
-    'R': (0.78, [[(0.11, 1.01), (0.08, 0.07), (0.60, 0.04), (0.69, 0.31),
-                  (0.21, 0.49), (0.73, 1.01)]], []),
-
-    # OPEN AT THE TOP, and it has to stay that way. Closing that counter into a box was
-    # tried and it makes the letter a nine -- an S is two open hooks facing opposite ways, and
-    # sealing either one takes the letter with it.
-    'S': (0.70, [[(0.67, 0.11), (0.17, 0.06), (0.10, 0.43), (0.61, 0.53),
-                  (0.66, 0.90), (0.12, 0.96)]], []),
-
-    'P': (0.72, [[(0.15, 1.07), (0.10, 0.07), (0.62, 0.10), (0.67, 0.43), (0.17, 0.51)]], []),
-
-    'A': (0.82, [[(0.04, 1.02), (0.23, 0.06), (0.59, 0.06), (0.78, 1.02)],
-                 [(0.17, 0.59), (0.41, 0.79), (0.65, 0.57)]], []),
-
-    # The descender drops and hooks BACK LEFT, and it is longer than it was. Turning it
-    # right instead was tried: a bowl with a foot going right is a four, and the word ended
-    # PRA4.
-    'Y': (0.76, [[(0.08, 0.05), (0.11, 0.63), (0.62, 0.67), (0.66, 0.04)],
-                 [(0.64, 0.67), (0.60, 1.17), (0.14, 1.20)]], []),
-
-    'G': (0.74, [[(0.67, 0.11), (0.19, 0.06), (0.08, 0.51), (0.21, 0.98),
-                  (0.63, 0.95), (0.67, 0.60), (0.39, 0.58)]], []),
-
-    'F': (0.70, [[(0.70, 0.06), (0.12, 0.11), (0.19, 1.04)],
-                 [(0.15, 0.53), (0.56, 0.48)]], []),
-
-    'I': (0.30, [[(0.14, 0.05), (0.17, 1.02)]], []),
-
-    'T': (0.72, [[(0.02, 0.09), (0.70, 0.04)],
-                 [(0.37, 0.06), (0.33, 1.04)]], []),
-}
+SWEEP = 26.0         # degrees of arc the whole word covers
+SQUEEZE = 1.15       # Impact is narrower than the reference
+TRACK = 26           # pixels of air between letters, at ARCH_SIZE
+ARCH_SIZE = 300      # per-glyph render height, before the arch
 
 
-def handstyle(text, unit=210, gap=0.16):
-    """
-    The word, laid out and drawn.
-
-    LETTERS SET APART, which is the opposite of what the last version did. This hand writes
-    each shape on its own -- they line up rather than run together -- so the gap is positive
-    and the letters never touch.
-    """
-    rng = random.Random(9081)
-
-    def off():
-        return (rng.random() - 0.5) * 2.0 * WOBBLE
-
-    placed = []
-    pen = 0.0
+def _tiles(text, font):
+    """Each character on its own tile, tight-cropped, plus the advance to the next."""
+    out = []
+    probe = ImageDraw.Draw(Image.new('L', (10, 10)))
 
     for ch in text:
-        w, strokes, dots = GLYPHS[ch]
+        if ch == ' ':
+            out.append((None, int(ARCH_SIZE * 0.26)))
+            continue
 
-        # Every letter sits a hair off the line and a hair off the size. A row of letters that
-        # all sit at exactly the same height is the thing that reads as type however good the
-        # shapes are.
-        placed.append((pen, (rng.random() - 0.5) * 0.045, 0.96 + rng.random() * 0.08,
-                       strokes, dots))
-        pen += w + gap
+        box = probe.textbbox((0, 0), ch, font=font)
 
-    span = pen - gap
+        w = max(1, box[2] - box[0] + 8)
+        h = max(1, box[3] - box[1] + 8)
 
-    # The marks at the end. Three of them, which is what the reference has -- a tag is signed
-    # off, and a word that simply stops looks unfinished next to one that does not.
-    blobs = [(span + 0.20, 0.34), (span + 0.40, 0.52), (span + 0.20, 0.70)]
+        tile = Image.new('RGBA', (w, h), CLEAR)
+        ImageDraw.Draw(tile).text((-box[0] + 4, -box[1] + 4), ch, font=font, fill=WHITE)
 
-    pad = 0.20
+        if SQUEEZE != 1.0:
+            tile = tile.resize((max(1, int(tile.width * SQUEEZE)), tile.height), Image.LANCZOS)
 
-    lo_x, hi_x = -pad, span + 0.56 + pad
-    lo_y, hi_y = -pad * 0.7, 1.22 + pad * 0.7
+        out.append((tile, tile.width + TRACK))
 
-    W = int((hi_x - lo_x) * unit)
-    H = int((hi_y - lo_y) * unit)
+    return out
 
-    img = Image.new('L', (W, H), 0)
-    d = ImageDraw.Draw(img)
 
-    def at(gx, gy, ox, oy, sc):
-        x = (gx * sc * CONDENSE + ox - lo_x + off())
-        y = (gy * sc + oy - lo_y + off())
+def arched(text):
+    """The word, bent over the top of a circle."""
+    font = ImageFont.truetype(FONT, ARCH_SIZE)
+    tiles = _tiles(text, font)
 
-        return ((x + (hi_y - lo_y - y) * SLANT) * unit, y * unit)
+    total = sum(w for _, w in tiles)
 
-    def blob(cx, cy, r):
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=255)
+    # The radius that makes this particular word cover SWEEP degrees. Derived rather than set,
+    # so a longer word arches over a bigger circle and every mark ends up with the same amount
+    # of curve in it -- a fixed radius would bend OVERSPRAY harder than GRAFFITI.
+    radius = total / math.radians(SWEEP)
 
-    def draw(strokes, dots, ox=0.0, oy=0.0, sc=1.0):
-        wide = WEIGHT * sc * unit
+    pad = 300
+    canvas = Image.new('RGBA', (int(total * 1.4) + pad, int(total * 0.8) + pad), CLEAR)
 
-        for line in strokes:
-            pts = []
+    cx = canvas.width / 2.0
+    cy = canvas.height * 0.30 + radius        # the circle's centre, well below the word
 
-            for i, (gx, gy) in enumerate(line):
-                pts.append(at(gx, gy, ox, oy, sc))
+    walked = -total / 2.0
 
-                # Long runs get a point put in the middle of them, which then wobbles like any
-                # other. Without this the letters are made of dead straight lines between two
-                # shaky ends, and straight is the one thing a hand cannot do.
-                if i + 1 < len(line):
-                    nx, ny = line[i + 1]
+    for tile, w in tiles:
+        a = (walked + w / 2.0) / radius       # radians from the top of the circle
 
-                    if math.hypot(nx - gx, ny - gy) > 0.28:
-                        pts.append(at((gx + nx) / 2, (gy + ny) / 2, ox, oy, sc))
+        if tile is not None:
+            rot = tile.rotate(-math.degrees(a), resample=Image.BICUBIC, expand=True)
 
-            d.line(pts, fill=255, width=int(round(wide)))
+            px = cx + math.sin(a) * radius
+            py = cy - math.cos(a) * radius
 
-            # Round ends and round corners. PIL's line is drawn with flat caps, so every join
-            # and every terminal is a notch until a disc is put on it -- and round ends are
-            # most of what says fibre tip rather than vector.
-            for px, py in pts:
-                blob(px, py, wide / 2.0)
+            canvas.alpha_composite(rot, (int(px - rot.width / 2), int(py - rot.height / 2)))
 
-        for gx, gy in dots:
-            px, py = at(gx, gy, ox, oy, sc)
-            blob(px, py, wide * 0.62)
+        walked += w
 
-    for ox, oy, sc, strokes, dots in placed:
-        draw(strokes, dots, ox, oy, sc)
-
-    draw([], blobs)
-
-    return img
+    return canvas.crop(canvas.getbbox())
 
 
 def tag(text):
-    img = handstyle(text)
-
-    out = Image.merge('RGBA', (Image.new('L', img.size, 255),) * 3 + (img,))
-    return out.crop(out.getbbox())
+    return arched(text)
 
 
 # ------------------------------------------------------------------------- caps

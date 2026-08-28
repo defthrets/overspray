@@ -36,12 +36,13 @@ namespace Overspray.UI
         /// How tall the mark is drawn.
         ///
         /// TIED TO THE ASPECT, not chosen. The panel is a fixed width, so a wider wordmark has
-        /// to be a shorter one -- at 0.066 this hand runs 104 percent of the row and goes out
-        /// through the side. 0.060 leaves it at 95, which is as full as it can be and still be
-        /// inside. Anything that changes LogoAspect has to be checked against this again.
+        /// to be a shorter one. This was cut to 0.060 for a hand that ran 104 percent of the
+        /// row at 0.066 and went out through the side; the arched mark is narrower, so it goes
+        /// back up and fills 92 percent. Anything that changes LogoAspect has to be checked
+        /// against this again -- it has caught an overflow once already.
         /// </summary>
-        private const float LogoH = 0.060f;
-        private const float LogoAspect = 6.2140f;
+        private const float LogoH = 0.066f;
+        private const float LogoAspect = 5.6517f;
         private const float CanH = 0.052f;
         private const float CanAspect = 0.4412f;
 
