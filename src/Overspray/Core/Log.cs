@@ -47,7 +47,7 @@ namespace Overspray.Core
                         RollIfLarge(path);
                         _started = true;
                         AppendLine(path, "");
-                        AppendLine(path, "=== " + Build.Name + " " + Build.Version + " started " +
+                        AppendLine(path, "=== " + Build.Name + " " + Build.Version + " by " + Build.By + " started " +
                                          DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) + " ===");
                     }
 
@@ -129,5 +129,15 @@ namespace Overspray.Core
         /// </summary>
         public const string Version = "0.1.0";
         public const string Name = "Overspray";
+
+        /// <summary>
+        /// Whose it is, next to the version wherever the version appears.
+        ///
+        /// One constant rather than the word typed into each line that shows it. There are
+        /// three of those already -- the ticker, the log header and the load line -- and a
+        /// name spelled out in three places is a name that gets changed in two.
+        /// </summary>
+        public const string By = "spitmux";
+
     }
 }

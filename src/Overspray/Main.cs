@@ -86,7 +86,7 @@ namespace Overspray
                 KeyDown += OnKey;
                 Aborted += OnAborted;
 
-                Log.Info(Build.Name + " " + Build.Version + " loaded. " + _cfg.MenuKey +
+                Log.Info(Build.Name + " " + Build.Version + " by " + Build.By + " loaded. " + _cfg.MenuKey +
                          " opens the picker; take an extinguisher from it and spray.");
             }
             catch (Exception ex)
@@ -214,7 +214,8 @@ namespace Overspray
 
             _saidHello = true;
 
-            UI.Hud.Ticker("~g~" + Build.Name + " " + Build.Version + "~s~ loaded.  Press ~b~" +
+            UI.Hud.Ticker("~g~" + Build.Name + " " + Build.Version + " - by " + Build.By +
+                          "~s~ loaded.  Press ~b~" +
                           _cfg.MenuKey + "~s~ for the can.");
         }
 
