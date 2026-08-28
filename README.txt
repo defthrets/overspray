@@ -5,7 +5,8 @@
 
   Hold the trigger with a spray can out and whatever you are aiming at takes
   paint. Walls, shutters, kerbs, the road, the side of a skip, a ceiling --
-  anything solid. Thirteen colours, chrome and gold among them. The paint stays where you put it and is still
+  anything solid. Thirteen colours, chrome and gold among them, and thin,
+  stock and fat caps for the can. The paint stays where you put it and is still
   there when you come back.
 
   Press F3 for the can.

@@ -75,10 +75,16 @@ The details are the point of this one.
 Press F3 for the picker. Thirteen colours, and two things to spray them with:
 
   SPRAY CAN
-      Four metres. A narrow band that tightens right up close, for detail work
-      and lettering. Franklin holds it properly, turns to face where he is
-      aiming, and tags with the game's own graffiti animation -- and shakes the
-      can every few seconds while he is standing about with it.
+      A narrow band that tightens right up close, for detail work and lettering.
+      Franklin holds it properly, turns to face where he is aiming, and tags
+      with the game's own graffiti animation -- and shakes the can every few
+      seconds while he is standing about with it.
+
+      THREE CAPS: thin, stock and fat. A cap sets the narrowest line the can can
+      draw, which is what a cap really is -- a fat one cannot do fine work
+      however close you hold it. The far end is still governed by how far off
+      the wall you stand, so the three converge as you step back, exactly like
+      real ones do.
 
   FIRE EXTINGUISHER
       Ten metres, up to two metres across, with a tinted cloud around the jet.
@@ -153,7 +159,7 @@ round and tell you exactly what they think of your artwork, in their own voices.
 -- CONTROLS --
 
   F3                open the picker
-  LEFT / RIGHT      choose a colour
+  LEFT / RIGHT      choose a colour, or a cap
   UP / DOWN         move between rows
   ENTER             take what is on the row
   BACKSPACE         close

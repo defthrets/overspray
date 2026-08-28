@@ -69,7 +69,13 @@ namespace Overspray.UI
         ///
         /// Two buttons. The tool you ask for is the tool you get, reach and all.
         /// </summary>
-        private enum Row { Swatches, TakeCan, TakeExt, Paint, Clear }
+        private enum Row { Swatches, Cap, TakeCan, TakeExt, Paint, Clear }
+
+        /// <summary>
+        /// Derived, because it was written out as a 4 in two places and this is the second time
+        /// a row has been added to the middle of that enum.
+        /// </summary>
+        private static readonly int LastRow = Enum.GetValues(typeof(Row)).Length - 1;
 
         private readonly Paint.PaintConfig _cfg;
         private readonly Paint.Marks _marks;
@@ -159,10 +165,20 @@ namespace Overspray.UI
             if (Tapped(Control.PhoneUp)) Move(-1);
             if (Tapped(Control.PhoneDown)) Move(1);
 
+            // THE TWO ROWS THAT ARE DIALS, not buttons. Both describe what is loaded rather
+            // than doing something, so both answer to left and right and neither needs Enter --
+            // though Enter walks the cap along too, because somebody who has only ever pressed
+            // Enter on this panel should not find one row silently inert.
             if (_row == Row.Swatches)
             {
                 if (Tapped(Control.PhoneLeft)) Step(-1);
                 if (Tapped(Control.PhoneRight)) Step(1);
+            }
+
+            if (_row == Row.Cap)
+            {
+                if (Tapped(Control.PhoneLeft)) Cycle(-1);
+                if (Tapped(Control.PhoneRight)) Cycle(1);
             }
 
             if (!Tapped(Control.PhoneSelect)) return;
@@ -172,6 +188,10 @@ namespace Overspray.UI
                 case Row.Swatches:
                     // Picking IS choosing. There is nothing to confirm.
                     Close();
+                    break;
+
+                case Row.Cap:
+                    Cycle(1);
                     break;
 
                 case Row.TakeCan:
@@ -278,8 +298,8 @@ namespace Overspray.UI
         private void Move(int by)
         {
             var n = (int)_row + by;
-            if (n < 0) n = 4;
-            if (n > 4) n = 0;
+            if (n < 0) n = LastRow;
+            if (n > LastRow) n = 0;
 
             _row = (Row)n;
 
@@ -287,6 +307,31 @@ namespace Overspray.UI
             _armed = false;
 
             Hud.Sound("NAV_UP_DOWN", "HUD_FRONTEND_DEFAULT_SOUNDSET");
+        }
+
+        /// <summary>
+        /// Puts the next cap on, and remembers it.
+        ///
+        /// Written back for the same reason the on/off switch is: somebody who paints with a
+        /// fat cap paints with a fat cap, and having to say so again every time the game loads
+        /// is worse than not being offered the choice.
+        /// </summary>
+        private void Cycle(int by)
+        {
+            var caps = Paint.Caps.All.Length;
+
+            _cfg.Cap = (_cfg.Cap + by % caps + caps) % caps;
+
+            try
+            {
+                IniFile.SetValue(Paths.Ini, "Paint", "Cap", _cfg.Cap.ToString());
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("Could not write the cap to the ini: " + ex.Message);
+            }
+
+            Hud.Sound("NAV_LEFT_RIGHT", "HUD_FRONTEND_DEFAULT_SOUNDSET");
         }
 
         private void Step(int by)
@@ -301,7 +346,7 @@ namespace Overspray.UI
 
             var w = Hud.X(0.45f);
             var h = Pad * 2f + LogoH + 0.004f + CanH + 0.014f + SwatchH + 0.020f
-                    + ButtonH * 4f + 0.024f + 0.030f;
+                    + ButtonH * 5f + 0.024f + 0.030f;
 
             var left = 0.5f - w * 0.5f;
 
@@ -415,6 +460,18 @@ namespace Overspray.UI
             // The right-hand word says which one you are already carrying, so the panel
             // answers "what have I got" without you having to close it and look.
             var has = Paint.Can.Has();
+
+            // ---- the nozzle ----
+            //
+            // A cap sets the NARROWEST line the can can draw, not the widest. That is what a
+            // cap is: a fat one cannot do fine work however close you hold it, while the far
+            // end stays governed by how far off the wall you are standing.
+            Button(x, y, inner, _row == Row.Cap,
+                   "SPRAY CAP",
+                   Paint.Caps.At(_cfg.Cap).Name.ToUpperInvariant(),
+                   ink, live, eased);
+
+            y += ButtonH + 0.008f;
 
             Button(x, y, inner, _row == Row.TakeCan,
                    "TAKE A SPRAY CAN",
