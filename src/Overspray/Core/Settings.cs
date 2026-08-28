@@ -83,7 +83,7 @@ namespace Overspray.Core
                 p.DripAfterMs = ini.GetInt("Paint", "DripAfterMs", p.DripAfterMs);
                 p.DripArea = Clamp(ini.GetFloat("Paint", "DripArea", p.DripArea), 0.02f, 2f);
                 p.DripStepMs = ini.GetInt("Paint", "DripStepMs", p.DripStepMs);
-                p.DripStep = Clamp(ini.GetFloat("Paint", "DripStep", p.DripStep), 0.005f, 0.5f);
+                p.DripOverlap = Clamp(ini.GetFloat("Paint", "DripOverlap", p.DripOverlap), 0.1f, 2f);
                 p.DripLength = Clamp(ini.GetFloat("Paint", "DripLength", p.DripLength), 0.05f, 4f);
                 p.DripRuns = ini.GetInt("Paint", "DripRuns", p.DripRuns);
                 p.DripWidth = Clamp(ini.GetFloat("Paint", "DripWidth", p.DripWidth), 0.05f, 2f);
