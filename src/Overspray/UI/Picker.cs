@@ -67,8 +67,29 @@ namespace Overspray.UI
         /// </summary>
         private const int SprayFrames = 8;
         private const int SprayFrameMs = 45;
-        private const int SprayEveryMs = 3200;
-        private const int SpraySpreadMs = 2200;
+
+        /// <summary>
+        /// The glow: how far the halo spreads past the mark, how strong it gets, and how long
+        /// a breath takes.
+        ///
+        /// COPIES OFFSET AROUND THE MARK, not scaled up behind it. There is no blur to be had
+        /// here -- a sprite is drawn or it is not -- so a glow has to be built out of the same
+        /// art drawn several times, and the two ways of doing that are not equally good.
+        ///
+        /// Scaling was the first attempt and it is WRONG for a wordmark, because a wordmark is
+        /// six times wider than it is tall: growing it six percent puts eleven pixels on its
+        /// width and two on its height, which is a horizontal smear rather than a halo. Offsets
+        /// are the same distance in every direction by construction.
+        ///
+        /// Eight directions on two rings, the outer one half as strong. Rendered at the real
+        /// size first -- four is visibly eight-pointed, and sixteen costs draws to fix a thing
+        /// eight had already fixed.
+        /// </summary>
+        private const int GlowDirs = 8;
+        private const int GlowRings = 2;
+        private const float GlowRadius = 0.0035f;
+        private const float GlowStrength = 0.30f;
+        private const double GlowMs = 2900.0;
 
         /// <summary>
         /// The idle: a slow rock and a slower drift up and down, so the mark is alive between
@@ -133,7 +154,6 @@ namespace Overspray.UI
         private int _nextShake;
 
         private int _sprayFrom = int.MinValue / 2;
-        private int _nextSpray;
 
         /// <summary>
         /// Whether the clear button has been pressed once already.
@@ -184,11 +204,10 @@ namespace Overspray.UI
             _openedAt = Game.GameTime;
             _armed = false;
 
-            // Sprays itself on every time the panel opens. Started here rather than left to the
-            // timer, because the one moment somebody is certainly looking at the mark is the
-            // moment it appears.
+            // Sprays itself on when the panel opens, and only then. It used to do it again
+            // every three to five seconds, which turned an arrival into a tic -- the mark
+            // was redrawing itself while you were trying to read the row under it.
             _sprayFrom = _openedAt;
-            _nextSpray = _openedAt + SprayEveryMs + _rng.Next(SpraySpreadMs);
 
             Hud.Sound("SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET");
         }
@@ -465,10 +484,45 @@ namespace Overspray.UI
             var mx = left + w * 0.5f;
             var my = y + LogoH * 0.5f + bob;
 
-            if ((frame == null || !Hud.Picture(frame, mx, my, logoW, LogoH, spin, ink)) &&
-                !Hud.Picture("logo.png", mx, my, logoW, LogoH, spin, ink))
+            // ---- the glow, in whatever is loaded ----
+            //
+            // IT IS THE COLOUR YOU PICKED, which is the only reason a glow earns its place
+            // here: the mark stops being decoration and becomes the biggest readout on the
+            // panel of what is in the can. The swatch row says it in a square; this says it
+            // across the whole header.
+            //
+            // Legible rather than raw, so black -- which is a real choice on this rack --
+            // glows a dark grey instead of glowing nothing at all against a near-black panel.
+            var breath = 0.72f + 0.28f * (float)Math.Sin(clock / GlowMs * Math.PI * 2.0);
+
+            var halo = Hud.Legible(Colour);
+
+            var lit = frame ?? "logo.png";
+
+            // Outermost ring first so the nearer, brighter one lands on top of it.
+            for (var ring = GlowRings; ring >= 1; ring--)
             {
-                Hud.Text("OVERSPRAY", x, y, 0.42f, ink, centre: false);
+                var soft = GlowStrength * (1f - (ring - 1) / (float)GlowRings) * breath * eased;
+
+                var ry = GlowRadius * ring;
+                var rx = Hud.X(ry);
+
+                for (var d = 0; d < GlowDirs; d++)
+                {
+                    var a = d * Math.PI * 2.0 / GlowDirs;
+
+                    Hud.Picture(lit,
+                                mx + (float)Math.Cos(a) * rx,
+                                my + (float)Math.Sin(a) * ry,
+                                logoW, LogoH, spin, Hud.Fade(halo, soft));
+                }
+            }
+
+            // And the mark itself on top, crisp and in the same colour.
+            if ((frame == null || !Hud.Picture(frame, mx, my, logoW, LogoH, spin, live)) &&
+                !Hud.Picture("logo.png", mx, my, logoW, LogoH, spin, live))
+            {
+                Hud.Text("OVERSPRAY", x, y, 0.42f, live, centre: false);
             }
 
             // Centred against the mark's row rather than sat at a fixed offset from its top,
@@ -597,15 +651,7 @@ namespace Overspray.UI
         /// </summary>
         private string Spraying()
         {
-            var now = Game.GameTime;
-
-            if (now >= _nextSpray)
-            {
-                _sprayFrom = now;
-                _nextSpray = now + SprayEveryMs + _rng.Next(SpraySpreadMs);
-            }
-
-            var i = (now - _sprayFrom) / SprayFrameMs;
+            var i = (Game.GameTime - _sprayFrom) / SprayFrameMs;
 
             return i >= 0 && i < SprayFrames ? "logo_" + i + ".png" : null;
         }
