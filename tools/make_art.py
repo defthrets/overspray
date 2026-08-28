@@ -264,15 +264,22 @@ GLYPHS = {
                   (0.15, 1.00), (0.06, 0.70), (0.09, 0.28), (0.13, 0.10)]],
           [(0.32, 0.56)]),
 
-    'V': (0.80, [[(0.04, 0.05), (0.40, 0.99), (0.76, 0.07)],
-                 [(0.40, 0.99), (0.84, 0.95)]], []),
+    # Two strokes and nothing else. It had a foot running right off the vertex, which put a
+    # horizontal along the baseline between this letter and the next and read as a join.
+    'V': (0.80, [[(0.04, 0.05), (0.40, 0.99), (0.76, 0.07)]], []),
 
-    'E': (0.72, [[(0.68, 0.07), (0.10, 0.11), (0.13, 0.52), (0.54, 0.47),
-                  (0.15, 0.63), (0.17, 1.00), (0.71, 0.95)]], []),
+    # The lower half is a Z, and it has to be obvious about it: the middle reaches most of
+    # the way across before turning back, so the diagonal is long enough to read as a stroke
+    # of its own rather than as a kink in the stem.
+    'E': (0.72, [[(0.68, 0.07), (0.10, 0.11), (0.13, 0.49), (0.64, 0.44),
+                  (0.11, 0.68), (0.16, 1.00), (0.72, 0.94)]], []),
 
     'R': (0.78, [[(0.11, 1.01), (0.08, 0.07), (0.60, 0.04), (0.69, 0.31),
                   (0.21, 0.49), (0.73, 1.01)]], []),
 
+    # OPEN AT THE TOP, and it has to stay that way. Closing that counter into a box was
+    # tried and it makes the letter a nine -- an S is two open hooks facing opposite ways, and
+    # sealing either one takes the letter with it.
     'S': (0.70, [[(0.67, 0.11), (0.17, 0.06), (0.10, 0.43), (0.61, 0.53),
                   (0.66, 0.90), (0.12, 0.96)]], []),
 
@@ -281,8 +288,11 @@ GLYPHS = {
     'A': (0.82, [[(0.04, 1.02), (0.23, 0.06), (0.59, 0.06), (0.78, 1.02)],
                  [(0.17, 0.59), (0.41, 0.79), (0.65, 0.57)]], []),
 
+    # The descender drops and hooks BACK LEFT, and it is longer than it was. Turning it
+    # right instead was tried: a bowl with a foot going right is a four, and the word ended
+    # PRA4.
     'Y': (0.76, [[(0.08, 0.05), (0.11, 0.63), (0.62, 0.67), (0.66, 0.04)],
-                 [(0.64, 0.67), (0.61, 1.13), (0.23, 1.16)]], []),
+                 [(0.64, 0.67), (0.60, 1.17), (0.14, 1.20)]], []),
 
     'G': (0.74, [[(0.67, 0.11), (0.19, 0.06), (0.08, 0.51), (0.21, 0.98),
                   (0.63, 0.95), (0.67, 0.60), (0.39, 0.58)]], []),

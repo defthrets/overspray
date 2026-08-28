@@ -41,7 +41,7 @@ namespace Overspray.UI
         /// inside. Anything that changes LogoAspect has to be checked against this again.
         /// </summary>
         private const float LogoH = 0.060f;
-        private const float LogoAspect = 6.4239f;
+        private const float LogoAspect = 6.2140f;
         private const float CanH = 0.052f;
         private const float CanAspect = 0.4412f;
 
