@@ -150,8 +150,30 @@
      decals in the whole world at once and quietly drops the oldest. Overspray
      remembers everything you have painted and puts it back as you approach,
      which is why walking away and returning brings it back -- but it cannot
-     make the game hold more at once. Raising that limit means editing
-     gameconfig.xml with OpenIV, which is a separate job.
+     make the game hold more at once.
+
+     If you want more of it on the wall at once, that is a limit adjuster's job
+     and not this mod's:
+
+       GTA V ENHANCED -- DecalPatch.asi. A drop-in ASI, no OpenIV and no RPF
+         editing. It patches the cap at startup and its own ini sets the level:
+
+             [Decals]
+             ; 0=Vanilla (512), 1=Low (768), 2=Medium (896),
+             ; 3=High (1024), 4=Ultra (2048)
+             Level=4
+
+         Vanilla 512 is about seven seconds of solid spraying on screen at once.
+         Ultra 2048 is about thirty.
+
+       GTA V LEGACY -- a gameconfig with raised pools, installed with OpenIV.
+         Get one that matches your game version. A gameconfig for the wrong
+         build is the classic cause of an infinite loading screen, which is why
+         this mod does not ship one and why you should not take one from a mod
+         that is not maintained for your version.
+
+     Neither is required. Overspray works on a stock install; the cap only
+     decides how much is on screen at once, never how much is remembered.
 
 
 --------------------------------------------------------------------------------
