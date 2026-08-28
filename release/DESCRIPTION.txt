@@ -1,0 +1,189 @@
+================================================================================
+  OVERSPRAY 0.1.0 -- copy for the mod page
+================================================================================
+
+Three lengths. Use whichever the site's fields want.
+
+
+--------------------------------------------------------------------------------
+  1. ONE LINE  (summary field)
+--------------------------------------------------------------------------------
+
+Spray paint on any surface in Los Santos. Pick a colour, take a can, and go and
+put your name on something.
+
+
+--------------------------------------------------------------------------------
+  2. ONE PARAGRAPH  (short description)
+--------------------------------------------------------------------------------
+
+Spray paint on any surface in Los Santos. Press F3, pick from eleven colours,
+and take a spray can or a paint-filled fire extinguisher. Aim at anything solid
+and hold the trigger -- walls, shutters, kerbs, roads, ceilings. Splatters grow
+with distance and land at their own angle, so sweeping the reticle draws a real
+line rather than a row of dots. Nothing runs out, your work is remembered
+between sessions, and one button wipes it all. Drop-in install, no OpenIV, and
+your save is never touched.
+
+
+--------------------------------------------------------------------------------
+  3. FULL DESCRIPTION  (the mod page body)
+--------------------------------------------------------------------------------
+
+OVERSPRAY
+
+Franklin gets a spray can and a fire extinguisher full of paint, and Los Santos
+gets whatever you feel like putting on it.
+
+Aim at anything solid and hold the trigger. Walls, shutters, kerbs, the road,
+the side of a skip, the ceiling of a car park -- if the game will let a ray land
+on it, it takes paint. Nothing is pre-placed and nothing is scripted: where you
+point is where it goes.
+
+
+-- IT ACTUALLY LOOKS LIKE SPRAY --
+
+The details are the point of this one.
+
+  * Splatters grow with distance. Up close it is a tight band you can write
+    with; step back and it opens out into something you cover a garage door
+    with. The spray can and the extinguisher have completely separate curves,
+    because one is a can you work a foot from the wall and the other is a
+    pressure vessel you stand back from.
+
+  * Every mark lands at its own random angle. A wall covered in one blob
+    repeated fifty times reads as a tiling texture, not as paint.
+
+  * Sweeping the reticle draws a CONTINUOUS LINE. The gap between one splatter
+    and the next is filled in as you move, so a fast sweep is a stroke rather
+    than a row of dots -- the spacing follows your hand, not a clock.
+
+  * Paint goes on any surface at any angle. Ceilings, kerbs, the underside of a
+    bridge, the bonnet of a car. It reads the surface it hit and lies flat on it.
+
+
+-- TWO TOOLS --
+
+Press F3 for the picker. Eleven colours, and two things to spray them with:
+
+  SPRAY CAN
+      Four metres. A narrow band that tightens right up close, for detail work
+      and lettering. Franklin holds it properly, turns to face where he is
+      aiming, and tags with the game's own graffiti animation -- and shakes the
+      can every few seconds while he is standing about with it.
+
+  FIRE EXTINGUISHER
+      Ten metres, up to two metres across, with a tinted cloud around the jet.
+      For covering things quickly and making a mess.
+
+Neither one ever runs out. An aim dot shows exactly where the paint will land,
+which matters more than it sounds -- with a can in his hand the game has no
+reason to draw you a reticle.
+
+
+-- IT REMEMBERS --
+
+Your work stays where you put it. Walk to the other side of the city and back
+and it is still on the wall. It survives a reload. Up to fifty thousand marks
+are remembered, and the ones nearest you are always the ones on screen.
+
+CLEAR EVERY WALL wipes all of it when you want a blank canvas. It asks twice,
+because there is no undo.
+
+
+-- AND THE STREET NOTICES --
+
+Passers-by do not sprint away from you like you are holding a rifle. They turn
+round and tell you exactly what they think of your artwork, in their own voices.
+
+
+-- SAFE TO INSTALL, EASY TO REMOVE --
+
+  * Replaces no game files. Overwrites nothing. Never touches your save.
+  * Needs no OpenIV, no mods folder, no gameconfig edit, no DLC pack.
+  * The fire extinguisher is completely unmodified and still puts fires out
+    exactly as it always did -- the mod only watches it and adds paint on top.
+  * Uninstall by deleting four files.
+  * Works on GTA V Legacy AND GTA V Enhanced.
+
+
+-- REQUIREMENTS --
+
+  Script Hook V              http://www.dev-c.com/gtav/scripthookv/
+  ScriptHookVDotNet 3        github.com/scripthookvdotnet/scripthookvdotnet
+  .NET Framework 4.8         (Windows 10 and 11 already have it)
+
+  Version 3 of ScriptHookVDotNet. Not version 2. On GTA V Enhanced you need
+  3.6 or newer.
+
+
+-- INSTALLING --
+
+  Copy the "scripts" folder from the zip into your GTA V folder -- the one with
+  GTA5.exe in it -- and say yes to merging. That is the whole install.
+
+  It must end up looking like this:
+
+      Grand Theft Auto V\
+        scripts\
+          Overspray.dll
+          Overspray.ini
+          Overspray\
+            icons\
+              logo.png
+              can.png
+
+  The folder inside a folder is deliberate. Do not flatten it.
+
+  Script mods do NOT go in the OpenIV "mods" folder. They go in the real game
+  folder.
+
+  A few seconds after you spawn, Overspray posts a line in the top-left saying
+  it loaded and which key opens it. If you see that, it is working.
+
+
+-- CONTROLS --
+
+  F3                open the picker
+  LEFT / RIGHT      choose a colour
+  UP / DOWN         move between rows
+  ENTER             take what is on the row
+  BACKSPACE         close
+
+  Then aim and hold the fire button.
+
+
+-- SETTINGS --
+
+Overspray.ini sits next to the DLL. Every line is commented and every setting
+has a working default -- delete the whole file and the mod runs exactly the
+same. Change the key, the reach, how dense the paint is, how much is remembered,
+or turn the whole thing off.
+
+
+-- KNOWN LIMIT, AND IT IS THE GAME'S --
+
+GTA V only holds a few hundred decals in the entire world at once and quietly
+drops the oldest. Overspray remembers everything you have painted and puts it
+back as you approach, which is why walking away and returning brings it back --
+but it cannot make the game hold more at one time. Raising that limit means
+editing gameconfig.xml with OpenIV, which is a separate job and nothing to do
+with this mod.
+
+
+-- IF YOU ALSO RUN POSTED UP --
+
+That mod has this built in as a Graffiti app on the phone, using the same
+engine. Both installed is fine: Overspray notices and starts with its spray
+switched off so the two do not paint over each other. F3 still opens, and you
+can switch it on in there if you want both.
+
+
+-- CREDITS AND TERMS --
+
+Built on Script Hook V by Alexander Blade, and ScriptHookVDotNet.
+
+Free. Do what you like with it. Please do not re-upload it as your own, and if
+you build on it, say where it came from.
+
+Single player only. Do not use script mods in GTA Online.
