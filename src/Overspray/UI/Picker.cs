@@ -518,11 +518,17 @@ namespace Overspray.UI
                 }
             }
 
-            // And the mark itself on top, crisp and in the same colour.
-            if ((frame == null || !Hud.Picture(frame, mx, my, logoW, LogoH, spin, live)) &&
-                !Hud.Picture("logo.png", mx, my, logoW, LogoH, spin, live))
+            // And the mark itself on top, crisp and WHITE.
+            //
+            // The colour is the glow and the mark is the word. Drawing the letters in the
+            // loaded colour too made the whole header one hue and the wordmark stopped being
+            // a wordmark -- it read as a coloured smudge with a brighter middle. White on top
+            // keeps the name legible at every colour on the rack, including the dark ones,
+            // and lets the halo be the thing that carries what is in the can.
+            if ((frame == null || !Hud.Picture(frame, mx, my, logoW, LogoH, spin, ink)) &&
+                !Hud.Picture("logo.png", mx, my, logoW, LogoH, spin, ink))
             {
-                Hud.Text("OVERSPRAY", x, y, 0.42f, live, centre: false);
+                Hud.Text("OVERSPRAY", x, y, 0.42f, ink, centre: false);
             }
 
             // Centred against the mark's row rather than sat at a fixed offset from its top,
