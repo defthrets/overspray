@@ -78,6 +78,15 @@ namespace Overspray.Core
                 p.MetallicShine = Clamp(ini.GetFloat("Paint", "MetallicShine", p.MetallicShine), 0f, 2f);
                 p.CanDecal = ini.GetInt("Paint", "CanDecal", p.CanDecal);
                 p.VehicleDecal = ini.GetInt("Paint", "VehicleDecal", p.VehicleDecal);
+
+                p.Drips = ini.GetBool("Paint", "Drips", p.Drips);
+                p.DripAfterMs = ini.GetInt("Paint", "DripAfterMs", p.DripAfterMs);
+                p.DripArea = Clamp(ini.GetFloat("Paint", "DripArea", p.DripArea), 0.02f, 2f);
+                p.DripStepMs = ini.GetInt("Paint", "DripStepMs", p.DripStepMs);
+                p.DripStep = Clamp(ini.GetFloat("Paint", "DripStep", p.DripStep), 0.005f, 0.5f);
+                p.DripLength = Clamp(ini.GetFloat("Paint", "DripLength", p.DripLength), 0.05f, 4f);
+                p.DripRuns = ini.GetInt("Paint", "DripRuns", p.DripRuns);
+                p.DripWidth = Clamp(ini.GetFloat("Paint", "DripWidth", p.DripWidth), 0.05f, 2f);
                 p.CanDensity = Clamp(ini.GetFloat("Paint", "CanDensity", p.CanDensity), 0.25f, 6f);
                 p.Cap = ini.GetInt("Paint", "Cap", p.Cap);
                 p.CanColourGain = Clamp(ini.GetFloat("Paint", "CanColourGain", p.CanColourGain), 0.1f, 8f);
