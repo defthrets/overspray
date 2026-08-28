@@ -16,9 +16,11 @@
 #
 #   python tools/make_art.py
 
+import io
 import math
 import os
 import random
+import re
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
@@ -489,8 +491,24 @@ def main():
 
     tin = can()
 
-    # The three nozzles. Names match Caps.cs, which is what builds the filename at draw time.
-    nozzles = [('thin', 1.0), ('stock', 2.2), ('fat', 4.4)]
+    # The three nozzles, READ OUT OF Caps.cs rather than written here again.
+    #
+    # They were a second copy of the same three numbers, and the day the ladder moved up a step
+    # the icons would have gone on saying what it used to be -- a picture of a setting that
+    # quietly stops matching the setting is worse than no picture.
+    #
+    # Normalised against the smallest, because what the icon says is how much bigger this cap
+    # is than the thin one. That stays true whatever the absolute numbers become.
+    caps = os.path.join(HERE, 'src', 'Overspray', 'Paint', 'Caps.cs')
+
+    found = re.findall(r'new Cap\("(\w+)",\s*([\d.]+)f\)',
+                       io.open(caps, encoding='utf-8-sig').read())
+
+    if not found:
+        raise SystemExit('no caps found in ' + caps)
+
+    least = min(float(w) for _, w in found)
+    nozzles = [(n, float(w) / least) for n, w in found]
 
     mark = tag(TEXT)
     mark.save(os.path.join(OUT, 'logo.png'))
