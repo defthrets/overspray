@@ -466,6 +466,43 @@ def cap(width):
     return art.resize((wide, tall), Image.LANCZOS)
 
 
+def cap_tile(hole=95):
+    """
+    The stock cap as a phone TILE, which is a different drawing from the chip in the picker.
+
+    EVERY TILE IS 64x64 AND THE DRAW CALL FORCES THE SQUARE. The chip icon is two thirds as
+    wide as it is tall, so handed to the wheel it comes out a squat, stretched cap -- the same
+    trap sprayapp.png exists to avoid for the can, and the comment next to that one says so.
+
+    So this is a separate shape of the same object: squarer, much heavier in the line, and a
+    bigger hole. It has to hold down to sixteen pixels, which is the only test a tile has to
+    pass, and the chip's 22-unit stroke disappears at that size.
+    """
+    big = Image.new('RGBA', (S, S), CLEAR)
+    d = ImageDraw.Draw(big)
+
+    mid = S // 2
+
+    body_w, body_h = 400, 330
+    stem_w, stem_h = 110, 116
+    stroke = 34
+
+    top = (S - (body_h + stem_h)) // 2
+
+    d.rounded_rectangle([mid - body_w // 2, top, mid + body_w // 2, top + body_h],
+                        radius=78, outline=WHITE, width=stroke)
+
+    d.rounded_rectangle([mid - stem_w // 2, top + body_h - stroke,
+                         mid + stem_w // 2, top + body_h + stem_h],
+                        radius=18, outline=WHITE, width=stroke)
+
+    hole_y = top + body_h // 2
+
+    d.ellipse([mid - hole, hole_y - hole, mid + hole, hole_y + hole], fill=WHITE)
+
+    return big.resize((S // 8, S // 8), Image.LANCZOS)
+
+
 def main():
     if not os.path.exists(FONT):
         raise SystemExit('no Impact at ' + FONT)
@@ -529,15 +566,14 @@ def main():
         g.save(os.path.join(other, 'graffiti.png'))
         tin.save(os.path.join(other, 'spraycan.png'))
 
-        # One still file. The animated version -- eight frames swapped by a star in the
-        # filename -- is in the history if it is ever wanted again; the tile reads better
-        # holding still next to eight other tiles that do.
-        tile(tin).save(os.path.join(other, 'sprayapp.png'))
+        # THE APP'S TILE IS A CAP NOW, not a can. sprayapp.png is no longer drawn by anything
+        # -- it and tile() are in the history if the can is ever wanted back.
+        cap_tile().save(os.path.join(other, 'capapp.png'))
 
         for name, width in nozzles:
             cap(width).save(os.path.join(other, 'cap_%s.png' % name))
 
-        print('  hoodrich   graffiti.png %dx%d   spraycan.png %dx%d   sprayapp.png'
+        print('  hoodrich   graffiti.png %dx%d   spraycan.png %dx%d   capapp.png'
               % (g.size + tin.size))
         print('    graffiti aspect %.4f' % (g.size[0] / float(g.size[1])))
     else:
