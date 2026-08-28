@@ -53,6 +53,7 @@
         Overspray\
           icons\
             logo.png
+            logo_0.png ... logo_7.png
             can.png
             cap_thin.png
             cap_stock.png

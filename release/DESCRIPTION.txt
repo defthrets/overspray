@@ -145,6 +145,7 @@ round and tell you exactly what they think of your artwork, in their own voices.
           Overspray\
             icons\
               logo.png
+              logo_0.png ... logo_7.png
               can.png
               cap_thin.png
               cap_stock.png

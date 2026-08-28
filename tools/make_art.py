@@ -325,20 +325,85 @@ def tag(text):
     return arched(text)
 
 
-# ------------------------------------------------------------------------- caps
-#
-# The three nozzles, head on.
-#
-# THE HOLE IS THE ICON. A cap is a rim and an aperture and the aperture is the entire
-# difference between them, so the rim is identical on all three and the hole is drawn at the
-# real multiplier -- thin 1, stock 2.2, fat 4.4, the same numbers Caps.cs uses. The picture is
-# not an illustration of the setting, it IS the setting.
-#
-# Same house style as Posted Up's app icons: a white mask on transparent, drawn big and
-# downsampled, tinted at draw time. These land at about thirty device pixels, which is smaller
-# than those tiles ever get, so there are exactly two shapes in each -- a ring and a dot -- and
-# the specks around the outside, which are the only thing saying it sprays rather than being a
-# washer.
+# The reveal: the mark arriving as if it were being sprayed on.
+SPRAY_FRAMES = 8
+SPRAY_BAND = 0.16        # how wide the wet edge is, as a fraction of the word
+SPRAY_RAG = 0.045        # how far the edge wanders up and down the word
+SPRAY_SCALE = 0.5        # frames are rendered at half the mark, and still oversampled
+SPRAY_GRAIN = 3          # droplet size, in frame pixels
+
+
+def spraying(mark):
+    """
+    The wordmark part-sprayed, one image per frame.
+
+    THE SAME CANVAS EVERY TIME, uncropped, so the panel can swap frames without the mark
+    jumping. Cropping each one to its own ink would centre a growing word on a shrinking box,
+    which reads as it sliding in rather than as it arriving.
+
+    The front is not a straight edge: each row takes its offset off a slow random walk, so the
+    boundary wanders the way a real one does. Neighbouring rows have to agree about roughly
+    where it is or the front turns to static rather than to paint.
+
+    HALF SIZE AND COARSE DROPLETS, both for the same reason. Per-pixel noise at full size came
+    to 664 KB for eight frames -- noise is the one thing PNG cannot compress, and every byte of
+    it was detail nobody can see at seventy pixels tall. Grain in blocks reads MORE like a can
+    and costs a fraction, and the mark is still drawn at over twice its screen size.
+    """
+    rng = random.Random(31337)
+
+    W = max(1, int(mark.width * SPRAY_SCALE))
+    H = max(1, int(mark.height * SPRAY_SCALE))
+
+    alpha = mark.resize((W, H), Image.LANCZOS).split()[3]
+
+    band = W * SPRAY_BAND
+
+    rag = []
+    walk = 0.0
+    for _ in range(H):
+        walk = walk * 0.86 + (rng.random() - 0.5) * W * SPRAY_RAG
+        rag.append(walk)
+
+    # One value per droplet-sized block, shared by every pixel in it and by every frame, so the
+    # grain sits still on the wall while the front passes over it.
+    gw = W // SPRAY_GRAIN + 2
+    gh = H // SPRAY_GRAIN + 2
+    grain = [[0.30 + 0.70 * rng.random() for _ in range(gw)] for _ in range(gh)]
+
+    px = alpha.load()
+    out = []
+
+    for f in range(SPRAY_FRAMES):
+        # Runs past the right-hand edge on the last frame, so it is the whole word and the
+        # panel can hand over to logo.png without a step.
+        front = (f + 1) / float(SPRAY_FRAMES) * (W + band * 2) - band
+
+        frame = Image.new('L', (W, H), 0)
+        fp = frame.load()
+
+        for y in range(H):
+            edge = front + rag[y]
+            row = grain[y // SPRAY_GRAIN]
+
+            for x in range(W):
+                a = px[x, y]
+                if not a:
+                    continue
+
+                t = (edge - x) / band
+
+                if t >= 1.0:
+                    fp[x, y] = a
+                elif t > 0.0:
+                    # Stepped, not smooth. A clean ramp is a wipe; a ramp broken into droplets
+                    # is a can arriving -- and the steps are what lets it compress.
+                    v = a * t * row[x // SPRAY_GRAIN]
+                    fp[x, y] = int(v / 24) * 24
+
+        out.append(Image.merge('RGBA', (Image.new('L', (W, H), 255),) * 3 + (frame,)))
+
+    return out
 
 
 def cap(width):
@@ -431,6 +496,15 @@ def main():
 
     mark = tag(TEXT)
     mark.save(os.path.join(OUT, 'logo.png'))
+
+    # And the same mark arriving, for the panel to run when it opens.
+    for i, frame in enumerate(spraying(mark)):
+        frame.save(os.path.join(OUT, 'logo_%d.png' % i), optimize=True)
+
+    print('  overspray  logo_0..%d.png  %d KB the lot'
+          % (SPRAY_FRAMES - 1,
+             sum(os.path.getsize(os.path.join(OUT, 'logo_%d.png' % i))
+                 for i in range(SPRAY_FRAMES)) // 1024))
     tin.save(os.path.join(OUT, 'can.png'))
 
     for name, width in nozzles:

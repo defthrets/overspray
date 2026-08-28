@@ -52,6 +52,19 @@ namespace Overspray.UI
         /// <summary>How the panel arrives.</summary>
         private const int OpenMs = 200;
 
+        /// <summary>
+        /// The mark spraying itself on: how many frames there are, how long each is held, and
+        /// roughly how often it happens again.
+        ///
+        /// ON A SLOW CYCLE, like the can's shake, and offset from it so the two are not doing
+        /// something at the same moment -- a panel where everything moves together reads as one
+        /// animation rather than as two objects.
+        /// </summary>
+        private const int SprayFrames = 8;
+        private const int SprayFrameMs = 45;
+        private const int SprayEveryMs = 8000;
+        private const int SpraySpreadMs = 5000;
+
         /// <summary>How long a shake lasts, how hard, and roughly how often.</summary>
         private const int ShakeMs = 900;
         private const int ShakeSpreadMs = 3500;
@@ -101,6 +114,9 @@ namespace Overspray.UI
         private int _shakeFrom = int.MinValue / 2;
         private int _nextShake;
 
+        private int _sprayFrom = int.MinValue / 2;
+        private int _nextSpray;
+
         /// <summary>
         /// Whether the clear button has been pressed once already.
         ///
@@ -149,6 +165,12 @@ namespace Overspray.UI
             IsOpen = true;
             _openedAt = Game.GameTime;
             _armed = false;
+
+            // Sprays itself on every time the panel opens. Started here rather than left to the
+            // timer, because the one moment somebody is certainly looking at the mark is the
+            // moment it appears.
+            _sprayFrom = _openedAt;
+            _nextSpray = _openedAt + SprayEveryMs + _rng.Next(SpraySpreadMs);
 
             Hud.Sound("SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET");
         }
@@ -409,7 +431,14 @@ namespace Overspray.UI
             // panel with a hole where its name should be is worse than a plain heading.
             var logoW = Hud.X(LogoH) * LogoAspect;
 
-            if (!Hud.Picture("logo.png", left + w * 0.5f, y + LogoH * 0.5f, logoW, LogoH, 0f, ink))
+            // The frame if one is due, then the finished mark, then the typed word. Three deep
+            // because the frames are the only art here that is not load-bearing: an install
+            // missing them should still get a wordmark, not a hole where its name goes.
+            var frame = Spraying();
+
+            if ((frame == null ||
+                 !Hud.Picture(frame, left + w * 0.5f, y + LogoH * 0.5f, logoW, LogoH, 0f, ink)) &&
+                !Hud.Picture("logo.png", left + w * 0.5f, y + LogoH * 0.5f, logoW, LogoH, 0f, ink))
             {
                 Hud.Text("OVERSPRAY", x, y, 0.42f, ink, centre: false);
             }
@@ -526,6 +555,29 @@ namespace Overspray.UI
 
             Hud.Text("ARROWS  move      ENTER  choose      BACKSPACE  close",
                      x, top + h - 0.024f, 0.27f, dim);
+        }
+
+        /// <summary>
+        /// Which frame of the reveal is up, or null once it has finished and the mark is just
+        /// the mark.
+        ///
+        /// The frames are the SAME CANVAS as logo.png, uncropped, so handing over to it at the
+        /// end is invisible -- a frame cropped to its own ink would be a different shape drawn
+        /// into the same box, and the word would jump on the last step.
+        /// </summary>
+        private string Spraying()
+        {
+            var now = Game.GameTime;
+
+            if (now >= _nextSpray)
+            {
+                _sprayFrom = now;
+                _nextSpray = now + SprayEveryMs + _rng.Next(SpraySpreadMs);
+            }
+
+            var i = (now - _sprayFrom) / SprayFrameMs;
+
+            return i >= 0 && i < SprayFrames ? "logo_" + i + ".png" : null;
         }
 
         /// <summary>
