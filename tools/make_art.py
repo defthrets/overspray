@@ -401,33 +401,64 @@ def tag(text):
 # washer.
 
 
-def cap(width, ring=196, stroke=26, hole=32):
-    """One nozzle. width is the multiplier off Caps.cs and scales the hole and the specks."""
+def cap(width):
+    """
+    One nozzle, drawn the way a cap actually looks: the pressing pad face on, and its stem.
+
+    OUTLINE FOR THE BODY, SOLID FOR THE HOLE, which is the whole reason this reads at thirty
+    pixels. The body is a shape you recognise and then stop looking at -- it is identical on
+    all three -- so it can be a thin line. The hole is the only thing that differs, so it is
+    the only thing that is solid.
+
+    The hole grows by the SQUARE ROOT of the cap's multiplier rather than by the multiplier.
+    Drawn literally, a 4.4x fat cap next to a 1x thin one leaves the thin one as a dot about
+    two pixels across on screen, which is not a hole, it is a speck of dust. Root scaling puts
+    the three at 1 : 1.5 : 2.1, which is far enough apart to read at a glance and is what the
+    caps in a real rack look like next to each other anyway.
+    """
     big = Image.new('RGBA', (S, S), CLEAR)
     d = ImageDraw.Draw(big)
 
     mid = S // 2
 
-    # The rim, identical on all three so they read as a set rather than as one icon at three
-    # sizes. Punched rather than outlined -- an ellipse outline at this scale has a seam.
-    d.ellipse([mid - ring, mid - ring, mid + ring, mid + ring], fill=WHITE)
-    d.ellipse([mid - ring + stroke, mid - ring + stroke,
-               mid + ring - stroke, mid + ring - stroke], fill=CLEAR)
+    body_w, body_h = 295, 358
+    stem_w, stem_h = 83, 112
+    stroke = 22
 
-    r = hole * width
-    d.ellipse([mid - r, mid - r, mid + r, mid + r], fill=WHITE)
+    top = (S - (body_h + stem_h)) // 2
 
-    # Eight specks outside the rim, scaled with the hole. A fat cap throws big drops and a
-    # thin one throws a mist, and without these the thin icon is a ring with a full stop in it.
-    for i in range(8):
-        a = i * math.pi / 4.0
-        sx = mid + math.cos(a) * 214
-        sy = mid + math.sin(a) * 214
-        sr = 5 + 3.0 * width
+    d.rounded_rectangle([mid - body_w // 2, top, mid + body_w // 2, top + body_h],
+                        radius=68, outline=WHITE, width=stroke)
 
-        d.ellipse([sx - sr, sy - sr, sx + sr, sy + sr], fill=WHITE)
+    # Overlapped upward by the stroke so the two shapes weld rather than leaving a seam where
+    # they meet, which at this size is a white pixel that reads as a nick in the outline.
+    d.rounded_rectangle([mid - stem_w // 2, top + body_h - stroke,
+                         mid + stem_w // 2, top + body_h + stem_h],
+                        radius=14, outline=WHITE, width=stroke)
 
-    return big.resize((S // 8, S // 8), Image.LANCZOS)
+    r = 42 * math.sqrt(width)
+
+    hole_y = top + body_h // 2
+
+    d.ellipse([mid - r, hole_y - r, mid + r, hole_y + r], fill=WHITE)
+
+    # CROPPED TO THE CAP, not left in the middle of a square.
+    #
+    # A cap is two thirds as wide as it is tall, and a square file of it is a third air. The
+    # panel draws art into a box, so that air is a third of the box spent on nothing and the
+    # cap ends up two thirds the size it could be -- at thirty pixels that is the difference
+    # between reading it and squinting at it. Cropped here and drawn at CapAspect there.
+    margin = 6
+
+    box = (mid - body_w // 2 - margin, top - margin,
+           mid + body_w // 2 + margin, top + body_h + stem_h + margin)
+
+    art = big.crop(box)
+
+    tall = 64
+    wide = int(round(art.width * tall / float(art.height)))
+
+    return art.resize((wide, tall), Image.LANCZOS)
 
 
 def main():
@@ -449,7 +480,11 @@ def main():
     for name, width in nozzles:
         cap(width).save(os.path.join(OUT, 'cap_%s.png' % name))
 
-    print('  overspray  cap_thin.png cap_stock.png cap_fat.png')
+    nozzle = cap(1.0)
+
+    print('  overspray  cap_thin.png cap_stock.png cap_fat.png  %dx%d' % nozzle.size)
+    print('    cap aspect %.4f   <- CapAspect in both pickers'
+          % (nozzle.size[0] / float(nozzle.size[1])))
     print('  overspray  logo.png %dx%d   can.png %dx%d' % (mark.size + tin.size))
 
     # And the same treatment for the app inside Posted Up.

@@ -37,6 +37,9 @@ namespace Overspray.UI
         private const float CanH = 0.052f;
         private const float CanAspect = 0.4412f;
 
+        /// <summary>How many times wider than tall a cap icon is. Printed by tools/make_art.py.</summary>
+        private const float CapAspect = 0.6406f;
+
         /// <summary>How the panel arrives.</summary>
         private const int OpenMs = 200;
 
@@ -629,40 +632,30 @@ namespace Overspray.UI
             // not show it, so the row looked like a setting that applied to whatever you were
             // holding.
             //
-            // Two things say it, neither of them a word. The label is the can itself rather
-            // than the phrase "SPRAY CAP", so the row reads as a can and its three nozzles.
-            // And the whole row goes quiet while an extinguisher is the tool in hand, which is
-            // the same thing every other interface does with a control that is not currently
-            // connected to anything.
+            // It says so by GOING QUIET while an extinguisher is the tool in hand -- the can,
+            // the plate and all three caps down to a bit over a third. That is what every
+            // interface does with a control that is not connected to anything at the moment,
+            // and it needs no explaining.
             //
-            // Still usable while it is dimmed. Choosing your cap before you pick the can up is
-            // a reasonable thing to do, and a row you cannot touch would punish it.
-            var mine = _cfg.SprayCanLook;
+            // Still usable while dimmed. Choosing your cap before you pick the can up is a
+            // reasonable thing to do and a row you could not touch would punish it.
+            var lit = _cfg.SprayCanLook ? fade : fade * 0.42f;
 
-            var lit = mine ? fade : fade * 0.42f;
-
-            // The row itself, with neither label nor hint: a picture is going where each of
-            // those would have been.
-            Button(x, y, w, active, "", "", ink, live, fade);
-
-            var canH = ButtonH - 0.012f;
-            var canW = Hud.X(canH) * CanAspect;
-
-            if (!Hud.Picture("can.png", x + Hud.X(0.014f) + canW * 0.5f, y + ButtonH * 0.5f,
-                             canW, canH, 0f,
-                             active ? Hud.Fade(ink, lit) : Hud.Fade(Dim, lit)))
-            {
-                // No art. The words come back rather than the row being blank, because a row
-                // with nothing down its left-hand side is not a row that reads as anything.
-                Hud.Text("SPRAY CAP", x + Hud.X(0.014f), y + 0.011f, 0.35f,
-                         active ? Hud.Fade(ink, lit) : Hud.Fade(Dim, lit));
-            }
+            // Labelled like every other row and with no hint, because three pictures are going
+            // where that word would have been.
+            Button(x, y, w, active, "CAP SIZE", "", ink, live, fade);
 
             var caps = Paint.Caps.All;
 
-            var side = ButtonH - 0.014f;
+            // The plate stays square so the three read as a row of buttons; the cap inside it
+            // is drawn at its own proportions, because a cap squeezed into a square is a cap
+            // that looks like somebody stood on it.
+            var side = ButtonH - 0.012f;
             var wide = Hud.X(side);
             var gap = Hud.X(0.005f);
+
+            var capH = side * 0.88f;
+            var capW = Hud.X(capH) * CapAspect;
 
             var right = x + w - Hud.X(0.010f);
             var top = y + (ButtonH - side) * 0.5f;
@@ -687,7 +680,7 @@ namespace Overspray.UI
                 var tint = on ? Hud.Fade(live, lit) : Hud.Fade(Dim, lit);
 
                 if (!Hud.Picture(caps[i].Icon, left + wide * 0.5f, top + side * 0.5f,
-                                 wide * 0.80f, side * 0.80f, 0f, tint))
+                                 capW, capH, 0f, tint))
                 {
                     // No art in the folder. A plain square at the cap's own scale is the icon
                     // with its ring taken off, and still says which of the three this is --
