@@ -35,13 +35,18 @@ namespace Overspray.UI
         /// <summary>
         /// How tall the mark is drawn.
         ///
-        /// TIED TO THE ASPECT, not chosen. The panel is a fixed width, so a wider wordmark has
-        /// to be a shorter one. This was cut to 0.060 for a hand that ran 104 percent of the
-        /// row at 0.066 and went out through the side; the arched mark is narrower, so it goes
-        /// back up and fills 92 percent. Anything that changes LogoAspect has to be checked
-        /// against this again -- it has caught an overflow once already.
+        /// A MASTHEAD, not a billboard. It has been as tall as 0.066, which filled most of
+        /// the panel's width and made the header the loudest thing on a screen whose job is
+        /// choosing a colour.
+        ///
+        /// Small enough to be a mark rather than a headline, which is also what earns it the
+        /// motion below: a wordmark this size can rock and re-spray without dragging the eye
+        /// off the swatches, and one at 0.066 could not.
+        ///
+        /// The width still follows from LogoAspect, so anything that changes that has to be
+        /// checked against this -- it has caught an overflow once already.
         /// </summary>
-        private const float LogoH = 0.066f;
+        private const float LogoH = 0.034f;
         private const float LogoAspect = 5.6517f;
         private const float CanH = 0.052f;
         private const float CanAspect = 0.4412f;
@@ -62,8 +67,21 @@ namespace Overspray.UI
         /// </summary>
         private const int SprayFrames = 8;
         private const int SprayFrameMs = 45;
-        private const int SprayEveryMs = 8000;
-        private const int SpraySpreadMs = 5000;
+        private const int SprayEveryMs = 3200;
+        private const int SpraySpreadMs = 2200;
+
+        /// <summary>
+        /// The idle: a slow rock and a slower drift up and down, so the mark is alive between
+        /// re-sprays rather than only during them.
+        ///
+        /// TWO PERIODS THAT DO NOT DIVIDE INTO EACH OTHER, on purpose. Rocking and bobbing on
+        /// the same clock is a pendulum and the eye finds the loop in about two swings; on
+        /// 2.6 and 4.1 seconds they drift in and out of phase and it never quite repeats.
+        /// </summary>
+        private const float RockDegrees = 1.6f;
+        private const double RockMs = 2600.0;
+        private const float BobHeight = 0.0035f;
+        private const double BobMs = 4100.0;
 
         /// <summary>How long a shake lasts, how hard, and roughly how often.</summary>
         private const int ShakeMs = 900;
@@ -436,14 +454,26 @@ namespace Overspray.UI
             // missing them should still get a wordmark, not a hole where its name goes.
             var frame = Spraying();
 
-            if ((frame == null ||
-                 !Hud.Picture(frame, left + w * 0.5f, y + LogoH * 0.5f, logoW, LogoH, 0f, ink)) &&
-                !Hud.Picture("logo.png", left + w * 0.5f, y + LogoH * 0.5f, logoW, LogoH, 0f, ink))
+            // Never still. The rock is under two degrees and the drift is three thousandths of
+            // the screen -- small enough that nobody looking at a swatch notices, big enough
+            // that the header is not a dead sticker when they do look at it.
+            var clock = Game.GameTime;
+
+            var spin = (float)Math.Sin(clock / RockMs * Math.PI * 2.0) * RockDegrees;
+            var bob = (float)Math.Sin(clock / BobMs * Math.PI * 2.0) * BobHeight;
+
+            var mx = left + w * 0.5f;
+            var my = y + LogoH * 0.5f + bob;
+
+            if ((frame == null || !Hud.Picture(frame, mx, my, logoW, LogoH, spin, ink)) &&
+                !Hud.Picture("logo.png", mx, my, logoW, LogoH, spin, ink))
             {
                 Hud.Text("OVERSPRAY", x, y, 0.42f, ink, centre: false);
             }
 
-            Hud.TextRight(Tins[_pick].Name, x + inner, y + 0.004f, 0.34f, live);
+            // Centred against the mark's row rather than sat at a fixed offset from its top,
+            // which put it high the moment the mark got shorter.
+            Hud.TextRight(Tins[_pick].Name, x + inner, y + (LogoH - 0.020f) * 0.5f, 0.34f, live);
 
             y += LogoH + 0.004f;
 
