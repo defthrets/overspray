@@ -81,7 +81,8 @@
   Take a SPRAY CAN or an EXTINGUISHER from the picker. They are the same tool
   with different reach:
 
-    spray can           4 metres, a narrow band, for detail
+    spray can           2 metres, a narrow band, for detail. Three caps:
+                        thin, stock and fat
     extinguisher        10 metres, up to 2m across, for covering things
 
   Then aim and hold the fire button. A dot in the middle of the screen shows
@@ -94,25 +95,37 @@
   IF IT IS NOT WORKING
 --------------------------------------------------------------------------------
 
-  Work through these in order. Nearly every report is one of the first three.
+  Work through these in order. Nearly every report is one of the first four.
 
-  1. DID IT LOAD?
+  1. IS THE DLL BLOCKED?
+     WINDOWS BLOCKS FILES THAT CAME OUT OF A DOWNLOADED ZIP, and .NET refuses to
+     load a blocked assembly. It looks exactly like a broken mod: ScriptHookV
+     DotNet reports an error and nothing appears in game. It is not your install
+     and it is not the mod -- and it is the one fault the author can never
+     reproduce, because a file built on your own machine is never marked.
+
+         Right-click the ZIP -> Properties -> tick "Unblock" -> OK, THEN extract.
+
+     Doing it on the zip fixes every file inside at once. If you have already
+     extracted, right-click Overspray.dll and do the same thing there.
+
+  2. DID IT LOAD?
      A few seconds after you spawn, Overspray posts a line in the top-left
      saying it loaded and which key opens it. If you never see that line, the
      script is not running -- go to step 2. If you DO see it, the mod is fine
      and the problem is somewhere in step 5.
 
-  2. IS SCRIPTHOOKVDOTNET INSTALLED, AND VERSION 3?
+  3. IS SCRIPTHOOKVDOTNET INSTALLED, AND VERSION 3?
      Look in your GTA V folder for ScriptHookVDotNet3.dll. If it is not there,
      or you only have ScriptHookVDotNet2.dll, that is the problem.
 
-  3. HAS THE GAME UPDATED?
+  4. HAS THE GAME UPDATED?
      Script Hook V stops working every time Rockstar patch the game, and takes
      every script mod down with it until it is updated. This is by far the most
      common cause and it has nothing to do with this mod. Get the current
      Script Hook V from dev-c.com.
 
-  4. READ THE LOGS. There are two and they say different things:
+  5. READ THE LOGS. There are two and they say different things:
 
        ScriptHookVDotNet.log       in your GTA V folder.
                                    Says whether Overspray was loaded at all.
@@ -124,14 +137,15 @@
 
      If the second file does not exist, the mod never started -- steps 2 and 3.
 
-  5. IT LOADS BUT NOTHING PAINTS.
+  6. IT LOADS BUT NOTHING PAINTS.
      - Are you actually holding one? Take it from the picker with ENTER.
-     - Are you close enough? The CAN only reaches 4 metres. Aim at a wall you
-       could touch in a few steps, not one across the street.
+     - Are you close enough? The CAN only reaches 2 metres, measured from the
+       can itself. Aim at a wall you could reach out and touch, not one across
+       the street. The extinguisher is the one for range.
      - Is SPRAY PAINT switched to OFF in the picker? Turn it back on.
      - Is paint landing but vanishing? See the note about the decal pool below.
 
-  6. PAINT DISAPPEARS AFTER A FEW TAGS.
+  7. PAINT DISAPPEARS AFTER A FEW TAGS.
      That is the GAME's limit, not this mod's. GTA V keeps only a few hundred
      decals in the whole world at once and quietly drops the oldest. Overspray
      remembers everything you have painted and puts it back as you approach,

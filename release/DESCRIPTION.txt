@@ -121,6 +121,33 @@ round and tell you exactly what they think of your artwork, in their own voices.
   * Works on GTA V Legacy AND GTA V Enhanced.
 
 
+-- IF IT DOES NOT LOAD, READ THIS FIRST --
+
+  WINDOWS BLOCKS DLLs THAT CAME OUT OF A DOWNLOADED ZIP. This is the single most
+  common reason a script mod does nothing, and it looks exactly like a broken
+  mod: ScriptHookVDotNet reports an error and nothing appears in game.
+
+  It is not the mod and it is not your install. Windows marks anything that came
+  from the internet, .NET refuses to load a marked assembly, and the extracted
+  files inherit the mark from the zip.
+
+  Fix it BEFORE extracting, which does the whole lot at once:
+
+      Right-click the ZIP  ->  Properties  ->  tick "Unblock"  ->  OK
+      Then extract it.
+
+  If you already extracted, right-click Overspray.dll and do the same thing.
+
+  Still nothing? Two files say why:
+
+      ScriptHookVDotNet.log      in the same folder as GTA5.exe
+      scripts\Overspray\Overspray.log
+
+  If Overspray.log does not exist AT ALL, the DLL never loaded -- that is the
+  blocked-file problem above, or ScriptHookVDotNet is not installed. If it does
+  exist, it says in plain English what went wrong, and that is the file to send.
+
+
 -- REQUIREMENTS --
 
   Script Hook V              http://www.dev-c.com/gtav/scripthookv/
