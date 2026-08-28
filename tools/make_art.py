@@ -235,195 +235,156 @@ def tile(_tin, phase=None):
 
 # ------------------------------------------------------------------- handstyle
 #
-# The wordmark as a marker tag, drawn stroke by stroke rather than set in a font.
+# The wordmark, drawn stroke by stroke rather than set in a font.
 #
-# THIS USED TO BE SEGOE SCRIPT, sheared and dilated, and it was never going to get there. A
-# script FACE is one pen width everywhere and its letters are correct; a handstyle is neither.
-# What makes a tag look like a tag is a flat nib -- verticals come out fat, horizontals come
-# out thin, and every stroke ends on a slant because the tip is a chisel and not a point. No
-# amount of thickening a font produces that, because thickening is uniform by definition.
+# A ROUND MARKER, NOT A CHISEL. The first version of this swept a flat nib, which gives fat
+# verticals, thin horizontals and slanted stroke ends -- a completely different hand from the
+# one wanted here. This one is a fibre tip held square: the same width whatever direction it
+# travels, with round ends and round corners, which is why every stroke here is one weight.
 #
-# So: every letter is a few polylines, and every polyline is swept with a rectangular nib. The
-# widths fall out of the geometry instead of being drawn in.
+# UPRIGHT AND SPIKY. The letters are straight segments meeting at hard angles, standing up
+# rather than leaning, and set apart rather than interlocked -- so the shapes read one at a
+# time. What stops that being a stencil is that nothing is quite true: every point is nudged,
+# and every long run is broken in the middle and nudged again, so the lines bow the way a hand
+# bows them.
 #
-# STROKES ACCUMULATE. Each goes down at part strength and overlaps add, so a crossbar over a
-# stem is denser than either -- which is what a marker does when it crosses itself, and it is
-# the detail that stops the whole thing reading as a vector shape.
+# No font is involved anywhere. There is no graffiti face on a stock Windows box, and a
+# wordmark that needs a font nobody has is a wordmark that renders as a fallback.
 
-NIB_W = 0.225                # the chisel, across, in glyph units
-NIB_T = 0.075                # and its thickness
-NIB_A = math.radians(-16)    # held just off horizontal, the way a right hand holds one
-
-SLANT = 0.26                 # how far the whole word leans
-
-# CONDENSED, WHICH IS WHERE THE PROPORTIONS COME FROM. Nine letters set at their natural width
-# make a strip four and a half times as wide as it is tall, and the reference is two and a
-# half. The first attempt at closing that gap was to overlap the letters harder, and it turned
-# the word into a solid block nobody could read -- the reference's letters interlock at the
-# edges but every one of them is legible.
-#
-# So the letters are narrowed instead, which is what a real hand does when it wants a word to
-# fit: tall and thin, leaning, touching at the corners.
-CONDENSE = 0.80
+WEIGHT = 0.105        # stroke width, in glyph heights
+WOBBLE = 0.011        # how far off true each point lands
+SLANT = 0.0           # upright. This hand does not lean.
+CONDENSE = 1.0
 
 
-def _hull(pts):
-    """Andrew monotone chain. The region a convex nib sweeps IS the hull of its two ends."""
-    pts = sorted(set(pts))
-    if len(pts) < 3:
-        return pts
-
-    def half(ps):
-        out = []
-        for p in ps:
-            while len(out) > 1:
-                (ax, ay), (bx, by) = out[-2], out[-1]
-                if (bx - ax) * (p[1] - ay) - (by - ay) * (p[0] - ax) > 0:
-                    break
-                out.pop()
-            out.append(p)
-        return out
-
-    return half(pts)[:-1] + half(list(reversed(pts)))[:-1]
-
-
-def _nib(d, p0, p1, w, t, ang, ink):
-    """One segment of a stroke, swept with a rectangular tip."""
-    cx, sy = math.cos(ang), math.sin(ang)
-
-    corners = [(cx * w / 2 - sy * t / 2, sy * w / 2 + cx * t / 2),
-               (cx * w / 2 + sy * t / 2, sy * w / 2 - cx * t / 2),
-               (-cx * w / 2 + sy * t / 2, -sy * w / 2 - cx * t / 2),
-               (-cx * w / 2 - sy * t / 2, -sy * w / 2 + cx * t / 2)]
-
-    pts = [(p0[0] + ox, p0[1] + oy) for ox, oy in corners] + \
-          [(p1[0] + ox, p1[1] + oy) for ox, oy in corners]
-
-    d.polygon(_hull(pts), fill=ink)
-
-
-# Every glyph as polylines, in a box where y=0 is the cap line and y=1 the baseline. Angular
-# on purpose: a handstyle has no curves in it, it has corners taken at speed.
+# Every glyph as polylines in a box where y=0 is the top of the letter and y=1 the baseline;
+# anything past 1 is a descender. 'dots' are drawn as blobs rather than swept.
 GLYPHS = {
-    'O': (0.92, [[(0.60, 0.02), (0.20, 0.16), (0.04, 0.55), (0.16, 0.90), (0.50, 1.00),
-                  (0.82, 0.82), (0.90, 0.40), (0.72, 0.08), (0.46, 0.03)]]),
-    'V': (0.86, [[(0.04, 0.02), (0.42, 1.00), (0.84, 0.00)]]),
-    'E': (0.78, [[(0.74, 0.06), (0.16, 0.10)],
-                 [(0.16, 0.10), (0.22, 1.00)],
-                 [(0.19, 0.52), (0.60, 0.46)],
-                 [(0.22, 1.00), (0.76, 0.92)]]),
-    'R': (0.90, [[(0.08, 1.02), (0.22, 0.02)],
-                 [(0.22, 0.02), (0.78, 0.14), (0.62, 0.50), (0.20, 0.54)],
-                 [(0.40, 0.50), (0.86, 1.02)]]),
-    'S': (0.84, [[(0.82, 0.14), (0.44, 0.00), (0.10, 0.24), (0.52, 0.50),
-                  (0.78, 0.72), (0.42, 1.00), (0.04, 0.86)]]),
-    'P': (0.86, [[(0.10, 1.16), (0.26, 0.02)],
-                 [(0.26, 0.02), (0.84, 0.16), (0.70, 0.54), (0.22, 0.58)]]),
-    'A': (0.88, [[(0.02, 1.02), (0.44, 0.00), (0.86, 1.02)],
-                 [(0.16, 0.70), (0.74, 0.64)]]),
-    'Y': (0.90, [[(0.02, 0.02), (0.44, 0.60)],
-                 [(0.88, 0.00), (0.44, 0.60)],
-                 [(0.44, 0.60), (0.38, 1.06)]]),
-    'G': (0.92, [[(0.86, 0.14), (0.52, 0.00), (0.14, 0.22), (0.10, 0.72),
-                  (0.44, 1.00), (0.82, 0.86), (0.86, 0.56)],
-                 [(0.86, 0.56), (0.52, 0.58)]]),
-    'F': (0.76, [[(0.72, 0.04), (0.18, 0.08)],
-                 [(0.18, 0.08), (0.26, 1.04)],
-                 [(0.21, 0.50), (0.62, 0.44)]]),
-    'I': (0.34, [[(0.20, 0.02), (0.14, 1.02)]]),
-    'T': (0.74, [[(0.02, 0.08), (0.72, 0.02)],
-                 [(0.40, 0.05), (0.30, 1.04)]]),
+    'O': (0.62, [[(0.13, 0.10), (0.50, 0.03), (0.60, 0.32), (0.57, 0.80), (0.46, 1.02),
+                  (0.15, 1.00), (0.06, 0.70), (0.09, 0.28), (0.13, 0.10)]],
+          [(0.32, 0.56)]),
+
+    'V': (0.80, [[(0.04, 0.05), (0.40, 0.99), (0.76, 0.07)],
+                 [(0.40, 0.99), (0.84, 0.95)]], []),
+
+    'E': (0.72, [[(0.68, 0.07), (0.10, 0.11), (0.13, 0.52), (0.54, 0.47),
+                  (0.15, 0.63), (0.17, 1.00), (0.71, 0.95)]], []),
+
+    'R': (0.78, [[(0.11, 1.01), (0.08, 0.07), (0.60, 0.04), (0.69, 0.31),
+                  (0.21, 0.49), (0.73, 1.01)]], []),
+
+    'S': (0.70, [[(0.67, 0.11), (0.17, 0.06), (0.10, 0.43), (0.61, 0.53),
+                  (0.66, 0.90), (0.12, 0.96)]], []),
+
+    'P': (0.72, [[(0.15, 1.07), (0.10, 0.07), (0.62, 0.10), (0.67, 0.43), (0.17, 0.51)]], []),
+
+    'A': (0.82, [[(0.04, 1.02), (0.23, 0.06), (0.59, 0.06), (0.78, 1.02)],
+                 [(0.17, 0.59), (0.41, 0.79), (0.65, 0.57)]], []),
+
+    'Y': (0.76, [[(0.08, 0.05), (0.11, 0.63), (0.62, 0.67), (0.66, 0.04)],
+                 [(0.64, 0.67), (0.61, 1.13), (0.23, 1.16)]], []),
+
+    'G': (0.74, [[(0.67, 0.11), (0.19, 0.06), (0.08, 0.51), (0.21, 0.98),
+                  (0.63, 0.95), (0.67, 0.60), (0.39, 0.58)]], []),
+
+    'F': (0.70, [[(0.70, 0.06), (0.12, 0.11), (0.19, 1.04)],
+                 [(0.15, 0.53), (0.56, 0.48)]], []),
+
+    'I': (0.30, [[(0.14, 0.05), (0.17, 1.02)]], []),
+
+    'T': (0.72, [[(0.02, 0.09), (0.70, 0.04)],
+                 [(0.37, 0.06), (0.33, 1.04)]], []),
 }
 
 
-def handstyle(text, unit=190, gap=-0.04):
+def handstyle(text, unit=210, gap=0.16):
     """
-    The word, laid out and swept.
+    The word, laid out and drawn.
 
-    LETTERS OVERLAP, which is why the gap is negative. A tag is written without lifting much,
-    so its letters run into each other and share space -- setting them apart at even intervals
-    is the other thing that makes a word read as type.
+    LETTERS SET APART, which is the opposite of what the last version did. This hand writes
+    each shape on its own -- they line up rather than run together -- so the gap is positive
+    and the letters never touch.
     """
-    rng = random.Random(4471)
+    rng = random.Random(9081)
+
+    def off():
+        return (rng.random() - 0.5) * 2.0 * WOBBLE
 
     placed = []
     pen = 0.0
 
     for ch in text:
-        w, strokes = GLYPHS[ch]
+        w, strokes, dots = GLYPHS[ch]
 
-        # A wobble on every letter. A tag written by a hand does not sit on a ruled line, and a
-        # baseline that is exactly flat reads as type however good the letters are.
-        dy = (rng.random() - 0.5) * 0.10
-        sc = 0.94 + rng.random() * 0.12
-
-        placed.append((pen, dy, sc, strokes))
-        pen += w * sc * CONDENSE + gap
+        # Every letter sits a hair off the line and a hair off the size. A row of letters that
+        # all sit at exactly the same height is the thing that reads as type however good the
+        # shapes are.
+        placed.append((pen, (rng.random() - 0.5) * 0.045, 0.96 + rng.random() * 0.08,
+                       strokes, dots))
+        pen += w + gap
 
     span = pen - gap
 
-    # An arrow going in on the left, ticks coming off on the right. This is the grammar of the
-    # thing; without them a tag is a word in a funny hand.
-    marks = [[(-0.52, 1.06), (-0.14, 0.90)],
-             [(-0.48, 0.86), (-0.18, 0.82)],
-             [(span + 0.20, 0.30), (span + 0.44, 0.04)],
-             [(span + 0.14, 0.62), (span + 0.38, 0.38)]]
+    # The marks at the end. Three of them, which is what the reference has -- a tag is signed
+    # off, and a word that simply stops looks unfinished next to one that does not.
+    blobs = [(span + 0.20, 0.34), (span + 0.40, 0.52), (span + 0.20, 0.70)]
 
-    pad = 0.24
+    pad = 0.20
 
-    lo_x, hi_x = -0.58 - pad, span + 0.48 + pad
-    # Down to the P's descender and no further. The box used to reach 1.60 to hold a long
-    # sweep under the word; with that gone, the same number is a third of the picture spent on
-    # nothing -- and the panel scales this to a fixed height, so empty space at the bottom is
-    # paid for by the letters being smaller.
-    lo_y, hi_y = -0.10 - pad, 1.22 + pad
+    lo_x, hi_x = -pad, span + 0.56 + pad
+    lo_y, hi_y = -pad * 0.7, 1.22 + pad * 0.7
 
-    # The lean carries the top rightward, so the box has to allow for how far it will go.
-    lean = SLANT * (hi_y - lo_y)
-
-    W = int((hi_x - lo_x + lean) * unit)
+    W = int((hi_x - lo_x) * unit)
     H = int((hi_y - lo_y) * unit)
 
     img = Image.new('L', (W, H), 0)
+    d = ImageDraw.Draw(img)
 
-    def put(base, strokes, ox=0.0, oy=0.0, sc=1.0, ink=190, narrow=True):
-        """
-        One letter's worth, on its own layer, so its own overlaps add rather than replace.
+    def at(gx, gy, ox, oy, sc):
+        x = (gx * sc * CONDENSE + ox - lo_x + off())
+        y = (gy * sc + oy - lo_y + off())
 
-        NARROW IS FOR LETTERS ONLY. The pen advances by condensed widths, so a letter's origin
-        is already in final space while its own points are still in glyph space and need
-        narrowing on the way through. The flourishes are written directly in final space --
-        they are placed relative to the finished word, not to a glyph box -- so narrowing them
-        again dragged them back inside it, which is how the ticks ended up sitting on the last
-        letter instead of beside it.
-        """
-        layer = Image.new('L', (W, H), 0)
-        ld = ImageDraw.Draw(layer)
+        return ((x + (hi_y - lo_y - y) * SLANT) * unit, y * unit)
+
+    def blob(cx, cy, r):
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=255)
+
+    def draw(strokes, dots, ox=0.0, oy=0.0, sc=1.0):
+        wide = WEIGHT * sc * unit
 
         for line in strokes:
             pts = []
 
-            for gx, gy in line:
-                x = gx * sc * (CONDENSE if narrow else 1.0) + ox - lo_x
-                y = gy * sc + oy - lo_y
+            for i, (gx, gy) in enumerate(line):
+                pts.append(at(gx, gy, ox, oy, sc))
 
-                # Lean applied to the POINTS, not to the finished picture. Shearing the image
-                # shears the chisel with it, and then every flat end points the wrong way.
-                pts.append(((x + (hi_y - lo_y - y) * SLANT) * unit, y * unit))
+                # Long runs get a point put in the middle of them, which then wobbles like any
+                # other. Without this the letters are made of dead straight lines between two
+                # shaky ends, and straight is the one thing a hand cannot do.
+                if i + 1 < len(line):
+                    nx, ny = line[i + 1]
 
-            for a, b in zip(pts, pts[1:]):
-                _nib(ld, a, b, NIB_W * unit * sc, NIB_T * unit * sc, NIB_A, ink)
+                    if math.hypot(nx - gx, ny - gy) > 0.28:
+                        pts.append(at((gx + nx) / 2, (gy + ny) / 2, ox, oy, sc))
 
-        return ImageChops.add(base, layer)
+            d.line(pts, fill=255, width=int(round(wide)))
 
-    for ox, dy, sc, strokes in placed:
-        img = put(img, strokes, ox, dy, sc, ink=168 + rng.randrange(0, 46))
+            # Round ends and round corners. PIL's line is drawn with flat caps, so every join
+            # and every terminal is a notch until a disc is put on it -- and round ends are
+            # most of what says fibre tip rather than vector.
+            for px, py in pts:
+                blob(px, py, wide / 2.0)
 
-    img = put(img, marks, ink=214, narrow=False)
+        for gx, gy in dots:
+            px, py = at(gx, gy, ox, oy, sc)
+            blob(px, py, wide * 0.62)
 
-    # A whisker of blur. The nib polygons are exact, and exact is the one thing a marker on a
-    # wall never is.
-    return img.filter(ImageFilter.GaussianBlur(unit * 0.006))
+    for ox, oy, sc, strokes, dots in placed:
+        draw(strokes, dots, ox, oy, sc)
+
+    draw([], blobs)
+
+    return img
 
 
 def tag(text):
