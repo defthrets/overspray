@@ -1,8 +1,8 @@
 ﻿================================================================================
-  OVERSPRAY 0.1.0 -- copy for the mod page
+  OVERSPRAY 0.2.0 -- copy for the mod page
 ================================================================================
 
-Three lengths. Use whichever the site's fields want.
+Three lengths and a changelog. Use whichever the site's fields want.
 
 
 --------------------------------------------------------------------------------
@@ -28,7 +28,54 @@ your save is never touched.
 
 
 --------------------------------------------------------------------------------
-  3. FULL DESCRIPTION  (the mod page body)
+  3. CHANGELOG  (for the mod page's changelog field)
+--------------------------------------------------------------------------------
+
+0.2.0
+
+  THE SPRAY IS MEASURED FROM HIS HAND, NOT HIS FEET. A ped's position sits on the
+  floor between its feet, so the size curve was measured from his ankles -- the
+  nearest part of any wall was its skirting board, and a piece came out finest at
+  the bottom and fattest at the top on a wall you were standing square to. From
+  the hand it is finest across the middle where you are working and opens up
+  above your reach and below it, which is what a can does. This was wrong for the
+  whole of 0.1.0.
+
+  THIRTEEN COLOURS. Chrome and gold, and they are not flat tints. Nothing in this
+  game can make a mark reflective, so every mark lands in its own shade from a
+  range and the scatter is what reads as metal. A grey tint is primer and a
+  yellow-brown one is mustard -- that is what a "metallic" that is really a tint
+  looks like.
+
+  THREE CAPS: thin, stock, fat. A cap sets the NARROWEST line the can can draw,
+  because that is what a cap is -- a fat one cannot do detail however close you
+  hold it. The far end is still governed by how far off the wall you stand, so
+  the three converge as you step back, exactly like real ones do.
+
+  DENSER, AND THE RATE DIAL ACTUALLY WORKS. The can lays half again as much as it
+  did. The rate had also been capped without saying so: it placed one mark per
+  frame, so sixty frames a second was a hard ceiling however high the setting was
+  turned.
+
+  A NEW WORDMARK, arched and animated. It sprays itself on when the panel opens
+  and glows in whatever colour is loaded.
+
+  THE PANEL: a cap row with icons, a smaller masthead, and the on/off switch says
+  MOD. F3 still opens it when the mod is switched off, so it can never lock you
+  out of itself.
+
+  IF 0.1.0 WOULD NOT LOAD FOR YOU, READ STEP 1 of the troubleshooting in the
+  readme. Windows blocks DLLs that came out of a downloaded zip, and it looks
+  exactly like a broken mod. Right-click the ZIP, Properties, tick Unblock, THEN
+  extract.
+
+  Smaller things: the log now says what your decal cap is and what raises it,
+  paint on vehicles is attempted with a decal type that can stick to one, and the
+  can reaches 2 metres measured from the can rather than 4 measured from his feet.
+
+
+--------------------------------------------------------------------------------
+  4. FULL DESCRIPTION  (the mod page body)
 --------------------------------------------------------------------------------
 
 OVERSPRAY

@@ -1,5 +1,5 @@
 ﻿================================================================================
-  OVERSPRAY  0.1.0
+  OVERSPRAY  0.2.0
   Spray paint on any surface in GTA V.
 ================================================================================
 
@@ -73,8 +73,8 @@
 --------------------------------------------------------------------------------
 
     F3                  open the picker
-    LEFT / RIGHT        choose a colour
     UP / DOWN           move between rows
+    LEFT / RIGHT        choose a colour, or a cap
     ENTER               take what is on the row
     BACKSPACE           close
 
@@ -87,6 +87,14 @@
 
   Then aim and hold the fire button. A dot in the middle of the screen shows
   where the paint will land. Neither one ever runs out.
+
+  CAP SIZE sets the finest line the can can draw -- thin, stock or fat. A
+  fat cap cannot do detail however close you hold it, which is what a cap
+  is. The row goes quiet while an extinguisher is in your hands, because
+  caps are the can's.
+
+  MOD switches the paint off without closing the mod. F3 still opens the
+  panel when it is off, so it is always one keypress back.
 
   CLEAR EVERY WALL removes all of it. It asks twice because there is no undo.
 

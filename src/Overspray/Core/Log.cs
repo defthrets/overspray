@@ -120,14 +120,17 @@ namespace Overspray.Core
     internal static class Build
     {
         /// <summary>
-        /// 0.1.0, and it goes DOWN from the 0.2.0 that was here.
+        /// 0.2.0.
         ///
-        /// Everything before this was built and deployed straight to one machine, so those
-        /// numbers were notes to myself about which build was in the folder. This is the first
-        /// one anybody else can install, and starting a public life at 0.1.0 is more honest
-        /// than pretending there were two releases nobody could have had.
+        /// 0.1.0 was the first anybody else could install, and it started there rather than at
+        /// the 0.2.0 the folder had reached, because those earlier numbers were notes to myself
+        /// about which build was deployed and not releases anybody could have had.
+        ///
+        /// This one earns the bump: thirteen colours where there were eleven, three caps, a
+        /// wordmark that is drawn rather than set, and the spray measured from his hand instead
+        /// of his feet -- which was a bug the whole time 0.1.0 was up.
         /// </summary>
-        public const string Version = "0.1.0";
+        public const string Version = "0.2.0";
         public const string Name = "Overspray";
 
         /// <summary>
