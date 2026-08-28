@@ -624,9 +624,39 @@ namespace Overspray.UI
         {
             var active = _row == Row.Cap;
 
-            // The row itself, by the same thing that draws every other row -- with no hint,
-            // because three pictures are about to sit where that word would have gone.
-            Button(x, y, w, active, "SPRAY CAP", "", ink, live, fade);
+            // CAPS ARE FOR THE CAN, and the row has to say so without saying so. The engine
+            // has always known -- an extinguisher never consults a cap -- but the panel did
+            // not show it, so the row looked like a setting that applied to whatever you were
+            // holding.
+            //
+            // Two things say it, neither of them a word. The label is the can itself rather
+            // than the phrase "SPRAY CAP", so the row reads as a can and its three nozzles.
+            // And the whole row goes quiet while an extinguisher is the tool in hand, which is
+            // the same thing every other interface does with a control that is not currently
+            // connected to anything.
+            //
+            // Still usable while it is dimmed. Choosing your cap before you pick the can up is
+            // a reasonable thing to do, and a row you cannot touch would punish it.
+            var mine = _cfg.SprayCanLook;
+
+            var lit = mine ? fade : fade * 0.42f;
+
+            // The row itself, with neither label nor hint: a picture is going where each of
+            // those would have been.
+            Button(x, y, w, active, "", "", ink, live, fade);
+
+            var canH = ButtonH - 0.012f;
+            var canW = Hud.X(canH) * CanAspect;
+
+            if (!Hud.Picture("can.png", x + Hud.X(0.014f) + canW * 0.5f, y + ButtonH * 0.5f,
+                             canW, canH, 0f,
+                             active ? Hud.Fade(ink, lit) : Hud.Fade(Dim, lit)))
+            {
+                // No art. The words come back rather than the row being blank, because a row
+                // with nothing down its left-hand side is not a row that reads as anything.
+                Hud.Text("SPRAY CAP", x + Hud.X(0.014f), y + 0.011f, 0.35f,
+                         active ? Hud.Fade(ink, lit) : Hud.Fade(Dim, lit));
+            }
 
             var caps = Paint.Caps.All;
 
@@ -651,10 +681,10 @@ namespace Overspray.UI
                 if (on)
                 {
                     Hud.Box(left, top, wide, side,
-                            Hud.Fade(Color.FromArgb(255, 64, 64, 64), fade));
+                            Hud.Fade(Color.FromArgb(255, 64, 64, 64), lit));
                 }
 
-                var tint = on ? live : Hud.Fade(Dim, fade);
+                var tint = on ? Hud.Fade(live, lit) : Hud.Fade(Dim, lit);
 
                 if (!Hud.Picture(caps[i].Icon, left + wide * 0.5f, top + side * 0.5f,
                                  wide * 0.80f, side * 0.80f, 0f, tint))
