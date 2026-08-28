@@ -79,6 +79,11 @@ namespace Overspray.Core
                 p.CanDecal = ini.GetInt("Paint", "CanDecal", p.CanDecal);
                 p.VehicleDecal = ini.GetInt("Paint", "VehicleDecal", p.VehicleDecal);
 
+                p.StrokeStreaks = ini.GetBool("Paint", "StrokeStreaks", p.StrokeStreaks);
+                p.StreakStep = Clamp(ini.GetFloat("Paint", "StreakStep", p.StreakStep), 0.1f, 4f);
+                p.StreakIdleMs = ini.GetInt("Paint", "StreakIdleMs", p.StreakIdleMs);
+                p.StrokeSideways = ini.GetBool("Paint", "StrokeSideways", p.StrokeSideways);
+
                 p.Drips = ini.GetBool("Paint", "Drips", p.Drips);
                 p.DripAfterMs = ini.GetInt("Paint", "DripAfterMs", p.DripAfterMs);
                 p.DripArea = Clamp(ini.GetFloat("Paint", "DripArea", p.DripArea), 0.02f, 2f);
