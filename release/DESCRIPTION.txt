@@ -1,4 +1,4 @@
-================================================================================
+﻿================================================================================
   OVERSPRAY 0.1.0 -- copy for the mod page
 ================================================================================
 
@@ -17,8 +17,9 @@ put your name on something.
   2. ONE PARAGRAPH  (short description)
 --------------------------------------------------------------------------------
 
-Spray paint on any surface in Los Santos. Press F3, pick from eleven colours,
-and take a spray can or a paint-filled fire extinguisher. Aim at anything solid
+Spray paint on any surface in Los Santos. Press F3, pick from thirteen colours
+-- including a chrome and a gold that really do read as metal -- and take a
+spray can or a paint-filled fire extinguisher. Aim at anything solid
 and hold the trigger -- walls, shutters, kerbs, roads, ceilings. Splatters grow
 with distance and land at their own angle, so sweeping the reticle draws a real
 line rather than a row of dots. Nothing runs out, your work is remembered
@@ -54,6 +55,13 @@ The details are the point of this one.
   * Every mark lands at its own random angle. A wall covered in one blob
     repeated fifty times reads as a tiling texture, not as paint.
 
+  * CHROME AND GOLD ARE REAL. Nothing in this game can make a mark reflective,
+    so they are not done as a grey tint and a yellow tint -- which is how you
+    get primer and mustard. Every mark lands in its own shade, some near white
+    and some gunmetal, and the scatter reads as a reflection because that is
+    the only thing that ever causes it. Costs nothing: the marks were going on
+    the wall anyway.
+
   * Sweeping the reticle draws a CONTINUOUS LINE. The gap between one splatter
     and the next is filled in as you move, so a fast sweep is a stroke rather
     than a row of dots -- the spacing follows your hand, not a clock.
@@ -64,7 +72,7 @@ The details are the point of this one.
 
 -- TWO TOOLS --
 
-Press F3 for the picker. Eleven colours, and two things to spray them with:
+Press F3 for the picker. Thirteen colours, and two things to spray them with:
 
   SPRAY CAN
       Four metres. A narrow band that tightens right up close, for detail work

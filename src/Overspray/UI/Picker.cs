@@ -53,37 +53,13 @@ namespace Overspray.UI
         private static readonly Color Warn = Color.FromArgb(255, 214, 78, 62);
 
         /// <summary>
-        /// The eleven.
+        /// The rack, which lives in the engine now rather than here.
         ///
-        /// Spread round the wheel rather than picked for prettiness, so whatever somebody has
-        /// in mind when they think "I want that X" has something near it -- plus the two
-        /// neutrals on the end, which is where most actual graffiti lives.
+        /// It used to be a pair of arrays in this file and another pair in Posted Up's phone
+        /// app -- two hand-kept copies of one list, which is the exact thing the shared engine
+        /// exists to stop. Adding a colour is one edit.
         /// </summary>
-        private static readonly Color[] Colours =
-        {
-            Color.FromArgb(255, 228,  46,  46),   // red
-            Color.FromArgb(255, 244, 130,  30),   // orange
-            Color.FromArgb(255, 245, 218,  50),   // yellow
-            Color.FromArgb(255, 122, 214,  56),   // lime
-            Color.FromArgb(255,  40, 180, 120),   // green
-            Color.FromArgb(255,  50, 190, 226),   // cyan
-            Color.FromArgb(255,  52, 110, 226),   // blue
-            Color.FromArgb(255, 140,  76, 220),   // purple
-            Color.FromArgb(255, 240, 100, 180),   // pink
-            Color.FromArgb(255, 245, 245, 245),   // white
-
-            // NOT PURE ZERO. The decal arguments multiply the texture, so 0,0,0 is a true
-            // black that reads as a hole punched in the wall rather than as paint on it -- and
-            // it takes the plume down with it, leaving nothing to aim by. A hair above black
-            // keeps both legible and is indistinguishable from black on a wall.
-            Color.FromArgb(255,  20,  20,  22)    // black
-        };
-
-        private static readonly string[] Names =
-        {
-            "red", "orange", "yellow", "lime", "green",
-            "cyan", "blue", "purple", "pink", "white", "black"
-        };
+        private static readonly Paint.Swatch[] Tins = Paint.Rack.All;
 
         /// <summary>
         /// WHICH TOOL YOU TAKE IS THE WHOLE CHOICE. There used to be one spawn button and a
@@ -135,7 +111,10 @@ namespace Overspray.UI
 
         public bool IsOpen { get; private set; }
 
-        public Color Colour => Colours[_pick];
+        public Color Colour => Tins[_pick].Colour;
+
+        /// <summary>How far the loaded paint scatters its shade. Zero for all but the two metallics.</summary>
+        public float Sheen => Tins[_pick].Sheen;
 
         /// <summary>
         /// Kept so the sprayer's maths does not change shape.
@@ -312,7 +291,7 @@ namespace Overspray.UI
 
         private void Step(int by)
         {
-            _pick = (_pick + by + Colours.Length) % Colours.Length;
+            _pick = (_pick + by + Tins.Length) % Tins.Length;
             Hud.Sound("NAV_LEFT_RIGHT", "HUD_FRONTEND_DEFAULT_SOUNDSET");
         }
 
@@ -378,7 +357,7 @@ namespace Overspray.UI
                 Hud.Text("OVERSPRAY", x, y, 0.42f, ink, centre: false);
             }
 
-            Hud.TextRight(Names[_pick], x + inner, y + 0.004f, 0.34f, live);
+            Hud.TextRight(Tins[_pick].Name, x + inner, y + 0.004f, 0.34f, live);
 
             y += LogoH + 0.004f;
 
@@ -387,11 +366,11 @@ namespace Overspray.UI
 
             y += CanH + 0.014f;
 
-            // ---- the ten ----
+            // ---- the rack ----
             var gap = Hud.X(0.005f);
-            var each = (inner - gap * (Colours.Length - 1)) / Colours.Length;
+            var each = (inner - gap * (Tins.Length - 1)) / Tins.Length;
 
-            for (var i = 0; i < Colours.Length; i++)
+            for (var i = 0; i < Tins.Length; i++)
             {
                 var sx = x + i * (each + gap);
 
@@ -402,18 +381,18 @@ namespace Overspray.UI
                 var on = i == _pick;
                 var focused = _row == Row.Swatches;
 
-                // The chosen one stands taller as well as brighter. On a row of eleven small
-                // squares a highlight ring alone is easy to lose against a pale swatch.
+                // The chosen one stands taller as well as brighter. On a row of thirteen
+                // small squares a highlight ring alone is easy to lose against a pale swatch.
                 var sh = on ? SwatchH : SwatchH - 0.014f;
                 var sy = y + (SwatchH - sh);
 
-                Hud.Box(sx, sy, each, sh, Hud.Fade(Colours[i], eased));
+                Chip(sx, sy, each, sh, Tins[i], eased);
 
                 // A near-black swatch on a near-black panel is an empty slot rather than a
                 // colour, so the outline brightens as the swatch darkens -- the border is the
                 // only thing saying there is anything there at all.
                 Hud.Frame(sx, sy, each, sh, 0.0012f,
-                          Hud.Luma(Colours[i]) < 0.18f ? Dim : Line);
+                          Hud.Luma(Tins[i].Colour) < 0.18f ? Dim : Line);
 
                 if (on)
                 {
@@ -481,6 +460,40 @@ namespace Overspray.UI
 
             Hud.Text("ARROWS  move      ENTER  choose      BACKSPACE  close",
                      x, top + h - 0.024f, 0.27f, dim);
+        }
+
+        /// <summary>
+        /// One square on the rack.
+        ///
+        /// A METALLIC IS DRAWN AS THE RANGE IT SPRAYS, not as its middle. Chrome's middle is a
+        /// mid-grey, and a flat mid-grey square sitting next to the white one says "grey
+        /// paint" -- the player would only discover it was chrome by going and covering a wall
+        /// with it. Five bands lit from the top is the least a gradient can be and still read
+        /// as metal.
+        ///
+        /// Ten extra boxes on a panel already drawing thirty. Nothing here is near a budget.
+        /// </summary>
+        private static void Chip(float x, float y, float w, float h, Paint.Swatch s, float fade)
+        {
+            if (!s.Metallic)
+            {
+                Hud.Box(x, y, w, h, Hud.Fade(s.Colour, fade));
+                return;
+            }
+
+            const int bands = 5;
+
+            for (var i = 0; i < bands; i++)
+            {
+                // Brightest at the top down to darkest at the bottom, because light comes from
+                // above and a chrome swatch shaded the other way reads as a hole in the panel.
+                var t = 1f - i * 2f / (bands - 1);
+
+                // The band is a hair taller than its share, so rounding cannot leave a seam of
+                // panel showing between two of them.
+                Hud.Box(x, y + h * i / bands, w, h / bands + 0.0004f,
+                        Hud.Fade(Paint.Rack.Lit(s.Colour, t * s.Sheen), fade));
+            }
         }
 
         /// <summary>

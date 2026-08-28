@@ -125,6 +125,7 @@ namespace Overspray
                 else
                 {
                     _sprayer.Colour = _picker.Colour;
+                    _sprayer.Sheen = _picker.Sheen;
                     _sprayer.Scale = _picker.Scale;
 
                     // Set BEFORE Update, because Update is what starts the plume, and a
