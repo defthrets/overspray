@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using GTA;
+using GTA.Native;
 using Overspray.Core;
 using Overspray.Paint;
 using Overspray.UI;
@@ -26,6 +27,7 @@ namespace Overspray
         private readonly Picker _picker;
         private readonly Can _can;
         private readonly Bystanders _street = new Bystanders();
+        private Law _law;
         private readonly Spraycan _spraycan;
 
         private int _lastSave;
@@ -49,6 +51,7 @@ namespace Overspray
                 _picker = new Picker(_cfg.Paint, _marks);
                 _can = new Can();
                 _spraycan = new Spraycan(_cfg.Paint);
+                _law = new Law(_cfg.Paint);
 
 
                 // THE KEY ALWAYS WORKS. This used to park the whole script when Posted Up
@@ -170,6 +173,9 @@ namespace Overspray
 
                 if (_cfg.Paint.PaintEnabled) _marks.Sweep();
 
+                // And the law's opinion of him, which is a different thing entirely.
+                Booked();
+
                 // The street's opinion of a man with a can. Only while he is holding one, and
                 // it hands everything back the moment he is not.
                 _street.Update(Can.Out() && _cfg.Paint.PaintEnabled);
@@ -244,6 +250,59 @@ namespace Overspray
         ///
         /// Nothing at all when the extinguisher is away.
         /// </summary>
+        /// <summary>
+        /// One star while an officer can see him tagging, and no more than one.
+        ///
+        /// THE CAP IS THE FEATURE. Giving the star is easy and useless on its own: a one-star
+        /// chase climbs to two the moment he runs, and at two they shoot. Holding the ceiling at
+        /// one for as long as a can is the worst thing in his hands is what makes this an arrest
+        /// rather than the opening of a gunfight.
+        ///
+        /// IT ONLY EVER RAISES TO ONE. Already wanted for something real and it keeps its hands
+        /// off entirely -- a man with three stars has bigger problems than a wall, and quietly
+        /// dropping him to one because he happened to be holding a can would be this mod
+        /// rescuing him from the game.
+        ///
+        /// The ceiling is put back ONCE rather than every tick, because it only owns what it
+        /// took: something else may have set it since and this should not keep overruling it.
+        /// </summary>
+        private void Booked()
+        {
+            if (_law == null) return;
+
+            _law.Update(_sprayer != null && _sprayer.Spraying);
+
+            try
+            {
+                if (_law.Drawn || !_law.Watching)
+                {
+                    if (_capped)
+                    {
+                        Function.Call(Hash.SET_MAX_WANTED_LEVEL, 5);
+                        _capped = false;
+                    }
+
+                    return;
+                }
+
+                if (Game.Player.WantedLevel > 1) return;
+
+                if (!_capped)
+                {
+                    Function.Call(Hash.SET_MAX_WANTED_LEVEL, 1);
+                    _capped = true;
+                }
+
+                if (Game.Player.WantedLevel < 1) Game.Player.WantedLevel = 1;
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("Could not book him: " + ex.Message);
+            }
+        }
+
+        private bool _capped;
+
         private void Badge()
         {
             if (!Can.Out() || !_cfg.Paint.PaintEnabled) return;
