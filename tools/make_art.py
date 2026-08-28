@@ -576,6 +576,16 @@ def main():
         for name, width in nozzles:
             cap(width).save(os.path.join(other, 'cap_%s.png' % name))
 
+        # And the same mark arriving, so the phone's masthead sprays itself on exactly the way
+        # the standalone's does. The look carries across; the word does not.
+        for i, frame in enumerate(spraying(g)):
+            frame.save(os.path.join(other, 'graffiti_%d.png' % i), optimize=True)
+
+        print('  hoodrich   graffiti_0..%d.png  %d KB the lot'
+              % (SPRAY_FRAMES - 1,
+                 sum(os.path.getsize(os.path.join(other, 'graffiti_%d.png' % i))
+                     for i in range(SPRAY_FRAMES)) // 1024))
+
         print('  hoodrich   graffiti.png %dx%d   spraycan.png %dx%d   capapp.png'
               % (g.size + tin.size))
         print('    graffiti aspect %.4f' % (g.size[0] / float(g.size[1])))
