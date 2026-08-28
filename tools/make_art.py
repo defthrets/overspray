@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 #
 # The wordmark and the can, as white masks on transparent.
 #
@@ -34,6 +34,10 @@ TRACK = 14           # air between letters
 PAD = 90             # room for the halo to fall off into
 
 random.seed(20260827)
+
+S = 512              # working size for the cap icons, downsampled to 64
+WHITE = (255, 255, 255, 255)
+CLEAR = (0, 0, 0, 0)
 
 
 def wordmark(text):
@@ -381,6 +385,51 @@ def tag(text):
     return out.crop(out.getbbox())
 
 
+# ------------------------------------------------------------------------- caps
+#
+# The three nozzles, head on.
+#
+# THE HOLE IS THE ICON. A cap is a rim and an aperture and the aperture is the entire
+# difference between them, so the rim is identical on all three and the hole is drawn at the
+# real multiplier -- thin 1, stock 2.2, fat 4.4, the same numbers Caps.cs uses. The picture is
+# not an illustration of the setting, it IS the setting.
+#
+# Same house style as Posted Up's app icons: a white mask on transparent, drawn big and
+# downsampled, tinted at draw time. These land at about thirty device pixels, which is smaller
+# than those tiles ever get, so there are exactly two shapes in each -- a ring and a dot -- and
+# the specks around the outside, which are the only thing saying it sprays rather than being a
+# washer.
+
+
+def cap(width, ring=196, stroke=26, hole=32):
+    """One nozzle. width is the multiplier off Caps.cs and scales the hole and the specks."""
+    big = Image.new('RGBA', (S, S), CLEAR)
+    d = ImageDraw.Draw(big)
+
+    mid = S // 2
+
+    # The rim, identical on all three so they read as a set rather than as one icon at three
+    # sizes. Punched rather than outlined -- an ellipse outline at this scale has a seam.
+    d.ellipse([mid - ring, mid - ring, mid + ring, mid + ring], fill=WHITE)
+    d.ellipse([mid - ring + stroke, mid - ring + stroke,
+               mid + ring - stroke, mid + ring - stroke], fill=CLEAR)
+
+    r = hole * width
+    d.ellipse([mid - r, mid - r, mid + r, mid + r], fill=WHITE)
+
+    # Eight specks outside the rim, scaled with the hole. A fat cap throws big drops and a
+    # thin one throws a mist, and without these the thin icon is a ring with a full stop in it.
+    for i in range(8):
+        a = i * math.pi / 4.0
+        sx = mid + math.cos(a) * 214
+        sy = mid + math.sin(a) * 214
+        sr = 5 + 3.0 * width
+
+        d.ellipse([sx - sr, sy - sr, sx + sr, sy + sr], fill=WHITE)
+
+    return big.resize((S // 8, S // 8), Image.LANCZOS)
+
+
 def main():
     if not os.path.exists(FONT):
         raise SystemExit('no Impact at ' + FONT)
@@ -390,9 +439,17 @@ def main():
 
     tin = can()
 
+    # The three nozzles. Names match Caps.cs, which is what builds the filename at draw time.
+    nozzles = [('thin', 1.0), ('stock', 2.2), ('fat', 4.4)]
+
     mark = tag(TEXT)
     mark.save(os.path.join(OUT, 'logo.png'))
     tin.save(os.path.join(OUT, 'can.png'))
+
+    for name, width in nozzles:
+        cap(width).save(os.path.join(OUT, 'cap_%s.png' % name))
+
+    print('  overspray  cap_thin.png cap_stock.png cap_fat.png')
     print('  overspray  logo.png %dx%d   can.png %dx%d' % (mark.size + tin.size))
 
     # And the same treatment for the app inside Posted Up.
@@ -411,6 +468,9 @@ def main():
         # filename -- is in the history if it is ever wanted again; the tile reads better
         # holding still next to eight other tiles that do.
         tile(tin).save(os.path.join(other, 'sprayapp.png'))
+
+        for name, width in nozzles:
+            cap(width).save(os.path.join(other, 'cap_%s.png' % name))
 
         print('  hoodrich   graffiti.png %dx%d   spraycan.png %dx%d   sprayapp.png'
               % (g.size + tin.size))

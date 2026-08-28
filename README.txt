@@ -54,6 +54,9 @@
           icons\
             logo.png
             can.png
+            cap_thin.png
+            cap_stock.png
+            cap_fat.png
 
   THE FOLDER INSIDE A FOLDER IS NOT A MISTAKE. "scripts\Overspray\icons\" is
   where the artwork lives and where the mod writes its log and your saved paint.

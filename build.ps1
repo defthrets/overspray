@@ -224,7 +224,10 @@ if ($Package) {
         'scripts\Overspray.dll',
         'scripts\Overspray.ini',
         'scripts\Overspray\icons\logo.png',
-        'scripts\Overspray\icons\can.png'
+        'scripts\Overspray\icons\can.png',
+        'scripts\Overspray\icons\cap_thin.png',
+        'scripts\Overspray\icons\cap_stock.png',
+        'scripts\Overspray\icons\cap_fat.png'
     )
 
     $missing = @()

@@ -466,10 +466,7 @@ namespace Overspray.UI
             // A cap sets the NARROWEST line the can can draw, not the widest. That is what a
             // cap is: a fat one cannot do fine work however close you hold it, while the far
             // end stays governed by how far off the wall you are standing.
-            Button(x, y, inner, _row == Row.Cap,
-                   "SPRAY CAP",
-                   Paint.Caps.At(_cfg.Cap).Name.ToUpperInvariant(),
-                   ink, live, eased);
+            CapRow(x, y, inner, ink, live, eased);
 
             y += ButtonH + 0.008f;
 
@@ -609,6 +606,70 @@ namespace Overspray.UI
             Hud.Box(cx - canW * 0.30f * lift, top + CanH + 0.002f,
                     canW * 0.60f * lift, 0.0022f,
                     Hud.Fade(Color.FromArgb(90, 0, 0, 0), fade));
+        }
+
+        /// <summary>
+        /// The cap row: three little buttons rather than a word.
+        ///
+        /// A WORD IS THE WRONG CONTROL FOR THIS. "STOCK" tells you nothing about what it does
+        /// until you have tried all three and remembered, whereas three holes at three sizes
+        /// tell you before you press anything -- and the hole IS the setting, since a cap is
+        /// only ever the narrowest line the can can draw.
+        ///
+        /// Same house style as Posted Up's app icons, and the same trick: white art on
+        /// transparent, tinted at draw time, so one file is the dim one and the loaded colour
+        /// on the chosen one.
+        /// </summary>
+        private void CapRow(float x, float y, float w, Color ink, Color live, float fade)
+        {
+            var active = _row == Row.Cap;
+
+            // The row itself, by the same thing that draws every other row -- with no hint,
+            // because three pictures are about to sit where that word would have gone.
+            Button(x, y, w, active, "SPRAY CAP", "", ink, live, fade);
+
+            var caps = Paint.Caps.All;
+
+            var side = ButtonH - 0.014f;
+            var wide = Hud.X(side);
+            var gap = Hud.X(0.005f);
+
+            var right = x + w - Hud.X(0.010f);
+            var top = y + (ButtonH - side) * 0.5f;
+
+            // Right to left, so the rightmost is the last one and the row grows leftward from
+            // where the hint text would have ended. Laying it out the other way would put the
+            // set at a different place on the row from every hint above and below it.
+            for (var i = caps.Length - 1; i >= 0; i--)
+            {
+                var left = right - wide;
+                var on = i == _cfg.Cap;
+
+                // A lit plate behind the chosen one and nothing behind the others. A ring
+                // round all three would make this row louder than the swatches above it, and
+                // the swatches are the row that is meant to be loudest.
+                if (on)
+                {
+                    Hud.Box(left, top, wide, side,
+                            Hud.Fade(Color.FromArgb(255, 64, 64, 64), fade));
+                }
+
+                var tint = on ? live : Hud.Fade(Dim, fade);
+
+                if (!Hud.Picture(caps[i].Icon, left + wide * 0.5f, top + side * 0.5f,
+                                 wide * 0.80f, side * 0.80f, 0f, tint))
+                {
+                    // No art in the folder. A plain square at the cap's own scale is the icon
+                    // with its ring taken off, and still says which of the three this is --
+                    // better than three identical gaps.
+                    var d = side * 0.22f * (float)Math.Sqrt(caps[i].Width);
+
+                    Hud.Box(left + (wide - Hud.X(d)) * 0.5f, top + (side - d) * 0.5f,
+                            Hud.X(d), d, tint);
+                }
+
+                right = left - gap;
+            }
         }
 
         private void Button(float x, float y, float w, bool active, string label, string hint,

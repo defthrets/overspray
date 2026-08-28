@@ -146,6 +146,9 @@ round and tell you exactly what they think of your artwork, in their own voices.
             icons\
               logo.png
               can.png
+              cap_thin.png
+              cap_stock.png
+              cap_fat.png
 
   The folder inside a folder is deliberate. Do not flatten it.
 
