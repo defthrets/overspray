@@ -86,6 +86,10 @@ namespace Overspray
                 KeyDown += OnKey;
                 Aborted += OnAborted;
 
+                // What this install will hold, read off DecalPatch's own ini if it is there.
+                // Looked at and reported, never written -- see DecalCap.
+                DecalCap.Look();
+
                 Log.Info(Build.Name + " " + Build.Version + " by " + Build.By + " loaded. " + _cfg.MenuKey +
                          " opens the picker; take an extinguisher from it and spray.");
             }
