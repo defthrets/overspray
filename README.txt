@@ -142,7 +142,8 @@
      - Are you close enough? The CAN only reaches 2 metres, measured from the
        can itself. Aim at a wall you could reach out and touch, not one across
        the street. The extinguisher is the one for range.
-     - Is SPRAY PAINT switched to OFF in the picker? Turn it back on.
+     - Is MOD switched to OFF in the picker? Turn it back on. F3 still opens
+       the panel either way, which is why that switch is safe to use.
      - Is paint landing but vanishing? See the note about the decal pool below.
 
   7. PAINT DISAPPEARS AFTER A FEW TAGS.

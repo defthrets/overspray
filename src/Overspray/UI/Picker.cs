@@ -617,15 +617,18 @@ namespace Overspray.UI
 
             // ---- on or off ----
             //
-            // This turns the PAINT off, not the script. The script has to stay alive or the
-            // key that opens this panel stops working too, and then the only way back is
-            // editing a file -- which is a fine way to lose somebody who just wanted to try
-            // spraying without it.
+            // It says MOD because that is what somebody switching it off means, and everything
+            // they would expect to stop does: no marks, no jet, no reticle, no can in his hand
+            // and no hidden weapon. The extinguisher goes back to being the game's.
             //
-            // Everything else does stop: no marks, no jet, no reticle, no can in his hand and
-            // no hidden weapon. The extinguisher goes back to being the game's.
+            // THE ONE THING IT DOES NOT STOP IS THIS PANEL, deliberately. The key that opens it
+            // is not gated on this -- OnKey checks only that the script is alive -- because a
+            // switch that also removes the way back is a switch you can only undo by editing a
+            // file, and that is a fine way to lose somebody who just wanted to try the game
+            // without it for five minutes. It has already happened once here, with Posted Up's
+            // settings screen, which turned itself off and took its own way back with it.
             Button(x, y, inner, _row == Row.Paint,
-                   "SPRAY PAINT",
+                   "MOD",
                    _cfg.PaintEnabled ? "ON" : "OFF",
                    ink,
                    Hud.Fade(_cfg.PaintEnabled ? Hud.Legible(Colour) : Warn, eased), eased);

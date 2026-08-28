@@ -74,7 +74,7 @@ namespace Overspray
                              "app on the phone, running the same engine. Both painting at once " +
                              "gives two cans, two plumes and two decals for every one you " +
                              "meant, so the spray is switched OFF to start with. F3 still " +
-                             "works -- turn SPRAY PAINT on in there if you want both.");
+                             "works -- turn MOD on in there if you want both.");
                 }
 
                 _picker.StandDown = _alongsidePostedUp && _cfg.StandDownForPostedUp;
