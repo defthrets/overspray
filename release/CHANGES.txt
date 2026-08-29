@@ -62,17 +62,180 @@ higher is fewer marks and a longer stretch of one texture. StrokeStreaks=false
 is exactly what the mod did before, so it is one word to undo.
 
 
+AND A FULL PACKAGE
+
+There is a second zip now that carries ScriptHookVDotNet with it, so it merges
+straight over a clean GTA V folder. ScriptHookV itself is not in it and cannot
+be -- nothing in its package grants permission to hand it on, and it is pinned
+to one game build besides. READ ME FIRST.txt in that zip covers it.
+
+The mod-only zip is unchanged, for anybody who already runs script mods.
+
+
 -------------------------------------------------------------------------------
   0.2.0
 -------------------------------------------------------------------------------
 
-Thirteen colours where there were eleven, chrome and gold among them. Three cap
-sizes -- thin, stock and fat -- that change how fine the line goes.
+THE SPRAY COMES OUT OF HIS HAND
 
-A wordmark that is drawn rather than set.
+This was wrong for the whole time 0.1.0 was up, and it is the one to read.
 
-And the spray measured from his hand instead of his feet, which was a bug for
-the whole time 0.1.0 was up.
+A splatter grows with distance from the player, and that distance was taken from
+the ped's position -- which is its ROOT, sitting on the floor between his feet.
+So the nearest part of any wall was its skirting board and every mark fattened
+all the way up it. The finest paint in every piece you ever sprayed was at ankle
+height. It reads as a deliberate effect right up until you notice.
+
+Measured from the hand bone it comes out right on its own, and symmetrically:
+finest across the middle where he is actually working, opening up above his
+reach and below it, which is what a can does, because that is exactly when the
+can is furthest from the wall. Standing half a metre off a wall, 0.025 across
+the middle out to 0.165 at the top -- against 0.028 at the ankles and 0.300
+overhead before.
+
+It is the bone the can is already attached to, so it moves with the animation.
+Crouching, leaning and the first-person pose all come out right without any of
+them being a special case.
+
+
+CHROME AND GOLD
+
+Thirteen colours, up from eleven.
+
+Nothing in this game can make a decal reflective. A mark is a texture times one
+tint and it lands as flat as the wall behind it, so chrome done as a grey tint
+is primer and gold done as a yellow-brown tint is mustard -- which is what every
+"metallic" that is really just a tint looks like.
+
+What sells metal on a flat surface is that neighbouring marks DISAGREE. Some
+land near white, some land gunmetal, and the eye assembles the scatter into a
+reflection, because scatter is the only thing a reflection is ever caused by. So
+a colour carries a sheen as well: the colour is the middle of a range and the
+sheen is how far either side each mark may fall.
+
+It costs no decals. The marks were being placed anyway; they are just no longer
+all the same shade.
+
+
+THREE CAPS
+
+Thin, stock and fat, on their own row on the panel.
+
+A cap sets the NARROWEST line the can can draw, not the widest, and that is the
+whole of what a cap is. A fat cap cannot do fine work however close you hold it,
+because the paint is already wide as it leaves the nozzle. How far off the wall
+you stand still governs the far end, so the three converge as you step back --
+which is correct rather than a shortcut. Half a metre off a wall the cap is the
+only thing deciding the width; two metres off it is not the deciding factor any
+more.
+
+    standing 0.5 m off a wall      thin    stock   fat
+      at his hands                 0.025   0.055   0.110
+      half a metre above           0.036   0.055   0.110
+      at the top of his reach      0.139   0.139   0.139
+
+
+PAINT ON CARS
+
+Reported: nothing shows on vehicles at all. The ray always hit them, the decal
+was always placed, and nothing appeared -- because a car is not a wall as far as
+the decal system is concerned. splatters_paint goes on the map perfectly and
+does nothing on a panel.
+
+But the game plainly CAN mark a car: bullet holes and blood land on one and stay
+there while it drives, and those are the weapImpact family. So a hit on a
+vehicle asks for weapImpact_metal instead, which is what a car panel is.
+
+Unproven, which is why it is a setting and why the first mark to land on a car
+writes a line either way. "Nothing happens on cars" with nothing in the log is
+not something anybody can act on, including me.
+
+Paint on a car is never saved -- the decal sits in world space, so putting it
+back next session would put it in the middle of whatever road the car was on.
+
+
+HOW MUCH WILL IT HOLD
+
+At startup it reads your decal cap and says so, in one line, with roughly how
+many seconds of solid spraying that is. It is the first question anybody asks
+about a mod that covers walls and it should be answerable rather than guessable.
+
+It does NOT write it. The file belongs to another author, editing somebody
+else's config because it suits this mod is how a mod gets a reputation, and it
+would not even work -- DecalPatch reads its ini when the ASI attaches, long
+before any script exists, so a write from here lands a whole launch late.
+
+The README stopped telling people to edit gameconfig, too. On Enhanced that is
+the wrong answer: DecalPatch.asi is a drop-in that goes 512 / 768 / 896 / 1024 /
+2048, no OpenIV and no RPF. Legacy still wants a gameconfig, and the README now
+says why this mod will not ship one -- a gameconfig has to match the game build,
+and a mismatched one is the classic infinite loading screen. That is not a thing
+to hand strangers over a decal count.
+
+
+FIRST PERSON
+
+spray_can_male is authored for a camera behind him: it swings the arm across the
+body, which is what painting a wall looks like from outside and is exactly wrong
+from inside his own head. The can leaves the frame and wanders off to the left
+while paint carries on appearing under a reticle it is nowhere near.
+
+So in first person he holds the ready pose instead, can up and nozzle at the
+wall. Only the arm changes; nothing about where the paint lands comes from the
+animation and nothing about it was touched.
+
+
+THE BLOCKED DLL
+
+Three people reported the mod not loading, and the advice they were given was to
+follow the install instructions carefully -- which does not help when that is not
+the fault.
+
+It is Windows marking files that came out of a downloaded zip. .NET refuses to
+load a marked assembly, ScriptHookVDotNet reports an error, nothing appears in
+game. It is the one fault the author cannot reproduce, because a DLL built on
+your own machine is never marked.
+
+Unblocking the zip before extracting is now step one of the README, ahead of
+everything else, because that is what the reports actually are.
+
+
+DRIPS, BUILT AND SHIPPED OFF
+
+Hold the can on one spot and the paint runs. Two things are tracked: the dwell,
+which decides there is too much paint there, and the run itself, which has its
+own life and crawls down while the dwell continues. Move on and whatever was
+running stops where it got to rather than following the reticle across the wall.
+It thins as it goes and beads where it stops. It never starts on anything within
+about twelve degrees of level, because paint does not run down a pavement.
+
+Built twice -- dotted, then as one stretched decal -- and then switched off,
+because it costs sixteen marks a run and the wall is the scarce thing. Off by
+the flag rather than deleted: Drips=true in the ini brings it back, and the
+stretched decal it taught us about is what 0.3.0's strokes are built on.
+
+
+FIXES
+
+Loading paint no longer looks like losing it. The load path called the same
+routine as the CLEAR EVERY WALL button, which announces itself, so every startup
+logged "Wiped every mark" one millisecond before "Loaded 192 marks". Nothing was
+ever wiped, but that is not what it read like, and an hour went into a bug that
+was not there.
+
+Posted Up stopped stealing this mod's extinguisher. Both watch the same weapon
+and engage on "is an extinguisher selected", so taking one here had the other
+put a can in the same hand sixty-six milliseconds later. It was wrong on its own
+terms too: an extinguisher picked up in a fire station silently became a can.
+
+Denser paint for the same number of decals -- overlap, rate, and three density
+levers, one of which was clamped out of existence and doing nothing at all.
+
+The switch in the picker says MOD rather than SPRAY PAINT, and turning it off
+still leaves F3 working. A switch that removes the way back is one you can only
+undo by editing a file.
+
+The wordmark is drawn rather than set, and sprays itself on.
 
 
 -------------------------------------------------------------------------------
@@ -81,6 +244,10 @@ the whole time 0.1.0 was up.
 
 The first one anybody else could install.
 
-Hold the trigger with a can out and whatever you are aiming at takes paint.
-Walls, shutters, kerbs, the road, the side of a skip, a ceiling. The paint stays
-where you put it and is still there when you come back.
+Hold the trigger with a spray can out and whatever you are aiming at takes
+paint. Walls, shutters, kerbs, the road, the side of a skip, a ceiling --
+anything solid. Eleven colours. The paint stays where you put it and is still
+there when you come back.
+
+Press F3 for the can. Passers-by mouth off rather than run, because a can is not
+a gun.
