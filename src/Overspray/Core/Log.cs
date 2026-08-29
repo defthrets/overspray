@@ -120,17 +120,23 @@ namespace Overspray.Core
     internal static class Build
     {
         /// <summary>
-        /// 0.2.0.
+        /// 0.3.0.
         ///
         /// 0.1.0 was the first anybody else could install, and it started there rather than at
         /// the 0.2.0 the folder had reached, because those earlier numbers were notes to myself
         /// about which build was deployed and not releases anybody could have had.
         ///
-        /// This one earns the bump: thirteen colours where there were eleven, three caps, a
-        /// wordmark that is drawn rather than set, and the spray measured from his hand instead
-        /// of his feet -- which was a bug the whole time 0.1.0 was up.
+        /// 0.2.0 earned its bump on the can itself: thirteen colours where there were eleven,
+        /// three caps, a wordmark that is drawn rather than set, and the spray measured from his
+        /// hand instead of his feet -- which was a bug the whole time 0.1.0 was up.
+        ///
+        /// 0.3.0 is about what happens around the can. Police who SEE you tagging arrest you
+        /// rather than shoot at you; restoring a saved piece can now reclaim decal slots the way
+        /// laying one always could, which is why big tags were coming back cut off; and a stroke
+        /// is one stretched decal instead of a chain of round ones, so the same paint costs a
+        /// fraction of the marks.
         /// </summary>
-        public const string Version = "0.2.0";
+        public const string Version = "0.3.0";
         public const string Name = "Overspray";
 
         /// <summary>

@@ -17,6 +17,8 @@
   .\build.ps1
   .\build.ps1 -Deploy
   .\build.ps1 -Deploy -Target Both
+  .\build.ps1 -Package        # the mod on its own
+  .\build.ps1 -Package -Full  # ...and ScriptHookVDotNet bundled with it
 #>
 param(
     [ValidateSet('Release', 'Debug')]
@@ -26,6 +28,12 @@ param(
 
     # Builds the release zip in release\, with the tree a player unpacks.
     [switch]$Package,
+
+    # Bundle ScriptHookVDotNet into the zip as well, so it merges straight over a clean
+    # GTA V folder. Both editions ship the same SHVDN, so one copy serves either.
+    [switch]$Full,
+
+    [string]$ShvdnFrom = 'C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V Enhanced',
 
     [ValidateSet('Legacy', 'Enhanced', 'Both')]
     [string]$Target = 'Both',
@@ -211,7 +219,8 @@ if ($Package) {
 
     Copy-Item $outDll                          (Join-Path $stage 'scripts\Overspray.dll')
     Copy-Item (Join-Path $root 'Overspray.ini') (Join-Path $stage 'scripts\Overspray.ini')
-    Copy-Item (Join-Path $root 'README.txt')    (Join-Path $stage 'README.txt')
+    Copy-Item (Join-Path $root 'README.txt')          (Join-Path $stage 'README.txt')
+    Copy-Item (Join-Path $root 'release\CHANGES.txt') (Join-Path $stage 'CHANGES.txt')
 
     foreach ($p in Get-ChildItem (Join-Path $root 'data\icons') -Filter *.png) {
         Copy-Item $p.FullName (Join-Path $stage 'scripts\Overspray\icons')
@@ -219,8 +228,9 @@ if ($Package) {
 
     # Every file the mod actually reads, by the path it reads it from. Missing any one of
     # these is a different broken install, and all of them are silent.
-    $must = @(
+    [string[]]$must = @(
         'README.txt',
+        'CHANGES.txt',
         'scripts\Overspray.dll',
         'scripts\Overspray.ini',
         'scripts\Overspray\icons\logo.png',
@@ -237,6 +247,33 @@ if ($Package) {
         'scripts\Overspray\icons\logo_6.png',
         'scripts\Overspray\icons\logo_7.png'
     )
+
+    # Everything needed to run it, when asked for.
+    #
+    # Without this the zip is the mod and nothing else, which is right for somebody who
+    # already runs script mods and wrong for everybody else -- and 'it does not do anything'
+    # with no ScriptHookVDotNet installed looks identical to a mod that is broken.
+    #
+    # ScriptHookV itself is NOT in here and cannot be: Alexander Blade's licence forbids
+    # redistributing it. The README sends people to dev-c.com for that one file.
+    if ($Full) {
+        foreach ($f in @('ScriptHookVDotNet.asi', 'ScriptHookVDotNet2.dll',
+                         'ScriptHookVDotNet3.dll', 'ScriptHookVDotNet.ini')) {
+            $src = Join-Path $ShvdnFrom $f
+            if (-not (Test-Path $src)) { throw "-Full needs $f, and it is not in $ShvdnFrom" }
+
+            Copy-Item $src $stage
+            $must += $f
+        }
+
+        $lic = Join-Path $ShvdnFrom 'Licenses'
+        if (Test-Path $lic) { Copy-Item $lic $stage -Recurse }
+
+        Copy-Item (Join-Path $root 'release\READ ME FIRST.txt') $stage
+        $must += 'READ ME FIRST.txt'
+
+        $zip = Join-Path $root ('release\Overspray-' + $ver + '-full.zip')
+    }
 
     $missing = @()
     foreach ($m in $must) { if (-not (Test-Path (Join-Path $stage $m))) { $missing += $m } }

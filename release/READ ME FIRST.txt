@@ -1,0 +1,90 @@
+===============================================================================
+  OVERSPRAY 0.3.0  --  FULL PACKAGE
+===============================================================================
+
+  DRAG EVERYTHING IN THIS ZIP INTO YOUR GTA V FOLDER. SAY YES TO MERGING.
+
+  Your GTA V folder is the one with GTA5.exe in it, normally:
+  C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V
+
+  Then load a save and press F3.
+
+
+-------------------------------------------------------------------------------
+  UNBLOCK THE ZIP BEFORE YOU EXTRACT IT
+-------------------------------------------------------------------------------
+
+  Windows marks anything downloaded from the internet, and ScriptHookVDotNet
+  refuses to load a marked DLL. It does not say so -- the mod is simply not
+  there, with nothing in any log to explain it.
+
+  Right-click the ZIP -> Properties -> tick "Unblock" -> OK. THEN extract.
+
+  If you already extracted it, delete what you extracted, unblock the zip and
+  extract it again.
+
+
+-------------------------------------------------------------------------------
+  YOU STILL NEED ONE FILE. IT IS NOT IN HERE AND CANNOT BE.
+-------------------------------------------------------------------------------
+
+  ScriptHookV        http://www.dev-c.com/gtav/scripthookv/
+
+  Nothing in its package grants anyone permission to hand it on, so no mod is
+  allowed to include it -- and it is locked to one exact game build besides, so
+  a copy bundled today would be the wrong one the week after the next patch.
+  It takes about thirty seconds:
+
+    1. Download from the link above.
+    2. Open the zip, go into the "bin" folder.
+    3. Drag ScriptHookV.dll and dinput8.dll into your GTA V folder.
+
+  If ScriptHookV.dll is already sitting next to GTA5.exe -- and it is, if you
+  run any .asi mod at all -- you have nothing to do. Skip this.
+
+
+-------------------------------------------------------------------------------
+  WHAT IS IN HERE
+-------------------------------------------------------------------------------
+
+  scripts\Overspray.dll       the mod
+  scripts\Overspray.ini       every setting, commented
+  scripts\Overspray\icons\    its artwork: the can, the three caps, the wordmark
+
+  ScriptHookVDotNet.asi       ScriptHookVDotNet, which runs .NET mods. Included
+  ScriptHookVDotNet2.dll      because its licence expressly allows it. Not our
+  ScriptHookVDotNet3.dll      work -- (c) crosire, kagikn and Chiheb-Bacha.
+  ScriptHookVDotNet.ini
+  Licenses\                   their licence and notices, kept with the binaries
+
+  README.txt                  how it works, controls, configuring it
+  CHANGES.txt                 what is new
+
+  ALREADY RUN OTHER .NET MODS? Then you already have ScriptHookVDotNet, and
+  yours may well be newer than this copy. Every .NET mod on your machine shares
+  one copy of it, so if in doubt, keep the newer one -- skip the four
+  ScriptHookVDotNet files when merging and take only the scripts folder.
+
+  If you would rather not be handed somebody else's copy at all, the mod-only
+  zip is the same release without them.
+
+  GTA V ENHANCED NEEDS 3.6 OR NEWER. The copy in here is fine. An older one you
+  already have may load on Legacy only, and Overspray will simply not start.
+
+
+-------------------------------------------------------------------------------
+  THEN
+-------------------------------------------------------------------------------
+
+  Press F3. The can comes out and the wheel opens: thirteen colours, three cap
+  sizes. Hold the trigger and whatever you are aiming at takes paint.
+
+  Paint stays where you put it and is still there when you come back.
+
+  Police who SEE you tagging will arrest you rather than shoot at you. Turn that
+  off with CopsCare=false in Overspray.ini if you would rather paint in peace.
+
+  Read README.txt for the rest.
+
+  To uninstall: delete scripts\Overspray.dll, scripts\Overspray.ini and the
+  scripts\Overspray folder. No game files are modified by this mod.

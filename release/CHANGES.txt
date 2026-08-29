@@ -1,0 +1,86 @@
+===============================================================================
+  OVERSPRAY  --  WHAT CHANGED
+===============================================================================
+
+
+-------------------------------------------------------------------------------
+  0.3.0
+-------------------------------------------------------------------------------
+
+THE LAW HAS OPINIONS ABOUT PAINT
+
+An officer who sees you tagging arrests you. One star, and held at one star for
+as long as a spray can is the worst thing in your hands -- because at one star
+they cuff you and from two they draw, so "arrest him, do not kill him" is not a
+behaviour to write, it is one star that refuses to climb.
+
+Seen, not nearby. It wants a clear line of sight and an officer roughly facing
+you; one the other side of the wall you are painting has not seen anything. A
+patrol rolling past counts, which is the classic way to get caught at this.
+
+Pull an actual gun and the cap comes off. What happens next is between you and
+them. The fire extinguisher does not count as a gun, which the obvious version
+of this check gets wrong -- it would book you for holding the very thing the mod
+put in your hand.
+
+And it only ever raises TO one star. Already wanted for something real and it
+keeps out of it entirely: a man with three stars has bigger problems than a
+wall, and quietly dropping him to one because he picked up a can would be the
+mod rescuing him from the game.
+
+CopsCare=false in the ini turns the whole thing off.
+
+
+BIG PIECES COME BACK WHOLE
+
+Two complaints, one missing line. Tags returned with chunks cut out of them, and
+old ones eventually stopped returning at all.
+
+Laying paint has always been able to reclaim a slot when the decal pool is full.
+Restoring paint never asked. So walking up to a saved piece filled the pool with
+whatever the list reached first -- and the list is oldest first, which is the
+START of a tag -- and then every remaining mark failed silently, and failed again
+on the next pass.
+
+Measured rather than guessed: a save here holds 6,710 marks across four pieces,
+the biggest of them 2,582, against a pool of 896 on a default Enhanced install.
+Nothing was ever lost. What this fixes is WHICH marks get the slots, and the
+answer is now the nearest ones. It also says so in the log when it cannot place
+them all, once per change -- "some of my tag is missing" is impossible to act on
+without a number.
+
+
+STROKES ARE ONE STRETCHED MARK, NOT A CHAIN OF DOTS
+
+ADD_DECAL takes a width and a height, and this engine handed it the same number
+twice everywhere except the drips. One decal stretched along the path covers
+what a string of round ones did, for a fraction of the marks -- which is the only
+lever there is, because the pool size is the game's and not ours.
+
+StreakStep in the ini is the trade: lower is more marks and a smoother line,
+higher is fewer marks and a longer stretch of one texture. StrokeStreaks=false
+is exactly what the mod did before, so it is one word to undo.
+
+
+-------------------------------------------------------------------------------
+  0.2.0
+-------------------------------------------------------------------------------
+
+Thirteen colours where there were eleven, chrome and gold among them. Three cap
+sizes -- thin, stock and fat -- that change how fine the line goes.
+
+A wordmark that is drawn rather than set.
+
+And the spray measured from his hand instead of his feet, which was a bug for
+the whole time 0.1.0 was up.
+
+
+-------------------------------------------------------------------------------
+  0.1.0
+-------------------------------------------------------------------------------
+
+The first one anybody else could install.
+
+Hold the trigger with a can out and whatever you are aiming at takes paint.
+Walls, shutters, kerbs, the road, the side of a skip, a ceiling. The paint stays
+where you put it and is still there when you come back.
