@@ -28,9 +28,18 @@
 
   Windows also needs .NET Framework 4.8, which Windows 10 and 11 already have.
 
-  BOTH GTA V LEGACY AND GTA V ENHANCED WORK. Enhanced needs a recent
-  ScriptHookVDotNet -- 3.6 or newer. Older ones load on Legacy only and will
-  simply not start this on Enhanced.
+  BOTH GTA V LEGACY AND GTA V ENHANCED WORK, on the same DLL.
+
+  SCRIPTHOOKVDOTNET 3.9.0 OR NEWER, on either edition. Not 3.6, not 3.7, not
+  3.8 -- this is built against 3.9.0 and an older one will refuse to load it.
+
+  What that looks like is nothing at all: no message when the game starts, F3
+  does nothing, and there is no Overspray.log to read, because the thing that
+  writes the log is the thing that did not load. ScriptHookVDotNet's own log
+  will have the error in it.
+
+  If you would rather not think about it, take the FULL download. It has a
+  matching copy in it.
 
 
 --------------------------------------------------------------------------------
