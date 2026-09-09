@@ -24,7 +24,7 @@ namespace Overspray.Core
         public bool Enabled = true;
 
         /// <summary>The picker key. The extinguisher does the rest.</summary>
-        public Keys MenuKey = Keys.F3;
+        public Keys MenuKey = Keys.F11;
 
         /// <summary>Whether paint survives a reload.</summary>
         public bool Persist = true;
@@ -77,6 +77,8 @@ namespace Overspray.Core
                 p.SizeJitter = Clamp(ini.GetFloat("Paint", "SizeJitter", p.SizeJitter), 0f, 0.5f);
                 p.MetallicShine = Clamp(ini.GetFloat("Paint", "MetallicShine", p.MetallicShine), 0f, 2f);
                 p.CanDecal = ini.GetInt("Paint", "CanDecal", p.CanDecal);
+                p.MixDecal = ini.GetInt("Paint", "MixDecal", p.MixDecal);
+                p.MixEvery = (int)Clamp(ini.GetInt("Paint", "MixEvery", p.MixEvery), 0f, 100f);
                 p.VehicleDecal = ini.GetInt("Paint", "VehicleDecal", p.VehicleDecal);
 
                 p.CopsCare = ini.GetBool("Paint", "CopsCare", p.CopsCare);
