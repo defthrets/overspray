@@ -105,6 +105,10 @@ namespace Overspray
 
         private void OnTick(object sender, EventArgs e)
         {
+            // The set's mark, for a few seconds after load. Bows out on its own and
+            // costs a comparison thereafter; see UI.Splash.
+            UI.Splash.Render();
+
             if (_parked || _cfg == null || !_cfg.Enabled) return;
 
             try
@@ -205,8 +209,26 @@ namespace Overspray
         /// It also names the key. Somebody who installed this a week ago and forgot what it
         /// was bound to should not have to find a readme.
         /// </summary>
+
+        /// <summary>
+        /// Whether the old load ticker still fires. It does not -- see the note in the
+        /// greeting. Static readonly rather than const so flipping it back does not make
+        /// everything after the guard unreachable code.
+        /// </summary>
+        private static readonly bool TickerGreeting = false;
+
         private void Hello()
         {
+            // THE SEAL SAYS IT NOW. See UI.Splash -- a row in the bottom corner with the
+            // mark, the name and the version on it, the same row every mod in the set draws
+            // and stacked so six of them do not land on top of each other.
+            //
+            // This ticker said the same thing in a different shape, and six mods each posting
+            // their own over the same three seconds was a wall of text nobody read to the
+            // bottom of. The log line is untouched: which key a mod is on is a real question
+            // and the log is where the answer belongs.
+            if (!TickerGreeting) return;
+
             if (_saidHello) return;
 
             // A few seconds in, and only once the player is real.
