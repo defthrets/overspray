@@ -5,6 +5,18 @@
 Unreleased -- 11 September 2026
 
 
+OLD TAGS COME BACK IN SECONDS, AND NOTHING IS TORN DOWN TO DO IT.
+
+The game takes about thirty-two new decals a frame. The sweep asked for every
+away-mark in range in one frame every second and a half, read every refusal
+as "the pool is full", and recycled a far mark's slot for each one -- six
+thousand refusals a sweep was six thousand far marks wiped a sweep, which is
+what "old tags disappear" was. The wall is now fed from a queue, twenty a
+frame, what you are stood at first; a refusal after something has gone up
+this frame is the intake and is simply tried again next frame; only a
+refusal with nothing placed yet is the pool. Refused dabs from the can are
+kept and come up next frame instead of being dropped.
+
 THE CAN SPRAYS BLOOD, NEVER BULLETS.
 
 splatters_blood (1010) is the default texture now, on shape: a dense middle
