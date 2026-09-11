@@ -22,7 +22,19 @@ namespace Overspray.UI
     {
         private const float Pad = 0.022f;
         private const float SwatchH = 0.075f;
-        private const float ButtonH = 0.044f;
+        private const float ButtonH = 0.040f;
+
+        /// <summary>
+        /// The rows: a hairline under each, and under the live one a soft fill and a rail in
+        /// the loaded colour. No boxes, no frame, no sheen -- a light behind the words rather
+        /// than a box round them. Same language as the talk panel in Posted Up.
+        /// </summary>
+        private const float Rail = 0.0032f;
+        private const int RowFill = 24;
+        private static readonly Color Hairline = Color.FromArgb(44, 200, 205, 200);
+
+        /// <summary>The footer's key caps.</summary>
+        private const float KeyH = 0.0175f;
 
         /// <summary>
         /// The mark and the can, and the shape of the files behind them.
@@ -35,19 +47,18 @@ namespace Overspray.UI
         /// <summary>
         /// How tall the mark is drawn.
         ///
-        /// A MASTHEAD, not a billboard. It has been as tall as 0.066, which filled most of
-        /// the panel's width and made the header the loudest thing on a screen whose job is
-        /// choosing a colour.
+        /// BLACKLETTER NOW: Overspray in a Fraktur, with paint running off three of its
+        /// strokes -- see tools/make_art.py. Taller than the arched block was, because a
+        /// Fraktur's lowercase sits small inside its own box: the O and the drips take the
+        /// top and bottom and the word itself gets about half, so at the old height the
+        /// letters were thirty pixels and unreadable. It is still a masthead rather than a
+        /// billboard, and still narrower than the panel by a wide margin.
         ///
-        /// Small enough to be a mark rather than a headline, which is also what earns it the
-        /// motion below: a wordmark this size can rock and re-spray without dragging the eye
-        /// off the swatches, and one at 0.066 could not.
-        ///
-        /// The width still follows from LogoAspect, so anything that changes that has to be
-        /// checked against this -- it has caught an overflow once already.
+        /// The width follows from LogoAspect, which is read off the generated file by the
+        /// tool that changes it, so the two cannot drift.
         /// </summary>
-        private const float LogoH = 0.034f;
-        private const float LogoAspect = 5.6517f;
+        private const float LogoH = 0.060f;
+        private const float LogoAspect = 3.7880f;
         private const float CanH = 0.052f;
         private const float CanAspect = 0.4412f;
 
@@ -533,7 +544,7 @@ namespace Overspray.UI
 
             // Centred against the mark's row rather than sat at a fixed offset from its top,
             // which put it high the moment the mark got shorter.
-            Hud.TextRight(Tins[_pick].Name, x + inner, y + (LogoH - 0.020f) * 0.5f, 0.34f, live);
+            Hud.TextRight(Tins[_pick].Name.ToUpperInvariant(), x + inner, y + (LogoH - 0.020f) * 0.5f, 0.30f, live);
 
             y += LogoH + 0.004f;
 
@@ -646,8 +657,48 @@ namespace Overspray.UI
                    Hud.Fade(_armed ? Warn : Ink, eased),
                    Hud.Fade(_armed ? Warn : Hud.Legible(Colour), eased), eased);
 
-            Hud.Text("ARROWS  move      ENTER  choose      BACKSPACE  close",
-                     x, top + h - 0.024f, 0.27f, dim);
+            // The keys, drawn as keys. A line of words saying which keys do what is a line
+            // of words; three caps with the words beside them is a control surface.
+            var ky = top + h - 0.026f;
+            var kx = Key(x, ky, "ARROWS", "MOVE", live, eased);
+            kx = Key(kx, ky, "ENTER", "CHOOSE", live, eased);
+            Key(kx, ky, "BACKSPACE", "CLOSE", live, eased);
+        }
+
+        /// <summary>
+        /// One key cap and the word beside it. Returns where the next one starts.
+        ///
+        /// A dark cap with a hairline of the loaded colour along its foot, the key's name on
+        /// it and what it does in dim beside it -- the same cap Posted Up draws under every
+        /// one of its panels, so a hand that knows one mod knows the other.
+        /// </summary>
+        private static float Key(float x, float y, string cap, string words, Color live, float fade)
+        {
+            var capW = Hud.X(0.004f) + TextWidth(cap, 0.22f);
+            var capTop = y - 0.0015f;
+
+            Hud.Box(x, capTop, capW, KeyH, Hud.Fade(Color.FromArgb(36, 255, 255, 255), fade));
+            Hud.Box(x, capTop + KeyH - 0.0012f, capW, 0.0012f, Hud.Fade(live, fade * 0.8f));
+
+            Hud.Text(cap, x + capW * 0.5f, y, 0.22f, Hud.Fade(Ink, fade), centre: true);
+
+            var wx = x + capW + Hud.X(0.004f);
+
+            Hud.Text(words, wx, y, 0.23f, Hud.Fade(Dim, fade));
+
+            return wx + TextWidth(words, 0.23f) + Hud.X(0.010f);
+        }
+
+        /// <summary>
+        /// Roughly how wide a run of the condensed face is, in screen width.
+        ///
+        /// The game will measure text for you, but only through a begin/end pair that costs
+        /// more than the drawing; for three caps a frame a per-character estimate is plenty
+        /// and cannot be wrong by more than a letter.
+        /// </summary>
+        private static float TextWidth(string text, float scale)
+        {
+            return Hud.X(0.0135f * scale / 0.30f) * text.Length + Hud.X(0.006f);
         }
 
         /// <summary>
@@ -789,7 +840,7 @@ namespace Overspray.UI
 
             // Labelled like every other row and with no hint, because three pictures are going
             // where that word would have been.
-            Button(x, y, w, active, "CAP SIZE", "", ink, live, fade);
+            Button(x, y, w, active, "CAP", "", ink, live, fade);
 
             var caps = Paint.Caps.All;
 
@@ -819,8 +870,12 @@ namespace Overspray.UI
                 // the swatches are the row that is meant to be loudest.
                 if (on)
                 {
+                    // The chosen nozzle stands on a shade with the loaded colour along its
+                    // foot, not a grey block: the icon is white, and the line under it says
+                    // which one is live the same way the rail says which row is.
                     Hud.Box(left, top, wide, side,
-                            Hud.Fade(Color.FromArgb(255, 64, 64, 64), lit));
+                            Hud.Fade(Color.FromArgb(38, 255, 255, 255), lit));
+                    Hud.Box(left, top + side - 0.0016f, wide, 0.0016f, Hud.Fade(live, lit));
                 }
 
                 var tint = on ? Hud.Fade(live, lit) : Hud.Fade(Dim, lit);
@@ -844,34 +899,26 @@ namespace Overspray.UI
         private void Button(float x, float y, float w, bool active, string label, string hint,
                             Color labelOn, Color hintColour, float fade)
         {
-            Hud.Box(x, y, w, ButtonH,
-                    Hud.Fade(active ? Color.FromArgb(255, 42, 42, 42)
-                                    : Color.FromArgb(255, 24, 24, 24), fade));
+            // A hairline under every row, so the list has rows without having boxes. The grey
+            // blocks, the frame and the sheen that swept the live one are gone: a light behind
+            // the words, not a box round them.
+            Hud.Box(x, y + ButtonH - 0.0012f, w, 0.0012f, Hud.Fade(Hairline, fade));
 
             if (active)
             {
-                Hud.Frame(x, y, w, ButtonH, 0.0026f, labelOn);
-
-                // A sheen travelling along the highlighted row, and only that one. It says
-                // "this is the live line" without another colour or another border, and it
-                // stops the panel looking frozen while you read it.
-                var t = (Game.GameTime % 1600) / 1600f;
-                var band = w * 0.22f;
-                var at = x - band + (w + band * 2f) * t;
-
-                var a = Math.Max(x, at);
-                var b = Math.Min(x + w, at + band);
-
-                if (b > a) Hud.Box(a, y, b - a, ButtonH, Hud.Fade(Color.FromArgb(26, 255, 255, 255), fade));
+                // The light behind the live line: a soft fill and a rail in what is loaded.
+                // The rail is the loaded colour even when the hint is a warning, because the
+                // rail says "this row" and the hint says what is wrong with it.
+                Hud.Box(x, y, w, ButtonH - 0.0012f, Hud.Fade(Color.FromArgb(RowFill, 255, 255, 255), fade));
+                Hud.Box(x, y, Hud.X(Rail), ButtonH - 0.0012f, Hud.Fade(Hud.Legible(Colour), fade));
             }
 
-            Hud.Text(label, x + Hud.X(0.014f), y + 0.011f, 0.35f,
+            Hud.Text(label, x + Hud.X(0.014f), y + 0.009f, 0.33f,
                      active ? labelOn : Hud.Fade(Dim, fade));
 
-            // Ends at the button's inner edge whatever the word is. The old version started it
-            // a fixed distance in from the right, which is a measurement of the word "ENTER"
-            // dressed up as a layout rule -- "SPRAY CAN" is wider and went out through the side.
-            Hud.TextRight(hint, x + w - Hud.X(0.014f), y + 0.012f, 0.30f,
+            // Ends at the row's inner edge whatever the word is -- "SPRAY CAN" is wider than
+            // "ENTER" and a fixed inset from the right put it out through the side.
+            Hud.TextRight(hint, x + w - Hud.X(0.012f), y + 0.010f, 0.28f,
                           active ? hintColour : Hud.Fade(Dim, fade));
         }
 

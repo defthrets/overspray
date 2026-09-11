@@ -5,6 +5,18 @@
 Unreleased -- 11 September 2026
 
 
+THE MARK IS BLACKLETTER, AND THE PANEL IS TIDIED ROUND IT.
+
+Overspray in a Fraktur -- UnifrakturCook Bold, under the SIL Open Font
+License, rendered to the same white mask the arched block was -- with paint
+running off three of its strokes and spatter under the baseline. It still
+sprays itself on when the panel opens, still glows in whatever is loaded,
+still rocks. Taller, because a Fraktur's lowercase sits small inside its own
+box. The rows under it lose their grey boxes and the sweeping sheen: a
+hairline under each, and under the live one a soft fill and a rail in the
+loaded colour. The footer's line of words is three key caps. The cap icons
+are exactly as they were.
+
 THE POOL THE COMPARES ARE NOT.
 
 With the thresholds at a hundred thousand the game still took paint down,

@@ -234,6 +234,10 @@
 
   Built on Script Hook V by Alexander Blade, and ScriptHookVDotNet.
 
+  The wordmark is set in UnifrakturCook, by j. 'mach' wust and Peter Wiegel,
+  under the SIL Open Font License. The font and its licence are in the
+  repo's tools\fonts; the mod itself ships only the rendered picture.
+
   Free. Do what you like with it. Please do not re-upload it as your own, and if
   you build on it, say where it came from.
 

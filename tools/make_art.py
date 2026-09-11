@@ -29,6 +29,14 @@ OUT = os.path.join(HERE, 'data', 'icons')
 
 FONT = os.path.join(os.environ.get('WINDIR', r'C:\Windows'), 'Fonts', 'impact.ttf')
 
+# THE STANDALONE'S MARK IS BLACKLETTER NOW. UnifrakturCook Bold, a Fraktur under the SIL Open
+# Font License (tools/fonts/OFL-UnifrakturCook.txt); the font ships in the repo for this script
+# and nowhere else -- what the mod ships is the rendered PNG. Bold because at header height a
+# Fraktur's hairlines vanish, and Cook is the one that keeps its weight small.
+FRAKTUR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts', 'UnifrakturCook-Bold.ttf')
+WORD = 'Overspray'
+FRAKTUR_SIZE = 320
+
 TEXT = 'OVERSPRAY'
 SIZE = 260           # per-glyph render height
 TRACK = 14           # air between letters
@@ -325,6 +333,112 @@ def tag(text):
     return arched(text)
 
 
+def fraktur(text):
+    """
+    The word in blackletter, with paint running off it.
+
+    MIXED CASE. Blackletter set in capitals is unreadable -- the capitals are the ornate half
+    of the alphabet and were never meant to stand next to each other -- so this is the one
+    mark in the family that is not shouted.
+
+    THE DRIPS COME OFF REAL STROKES. The bottom of every column of ink is measured and the
+    drips hang from columns whose ink ends at the baseline -- not from descenders, which
+    already hang -- spread along the word so they do not bunch. Each is a rounded run that
+    thins as it falls and ends in a bead, the way paint does off a wet letter, and a little
+    spatter sits under the baseline where a can would have thrown it.
+    """
+    font = ImageFont.truetype(FRAKTUR, FRAKTUR_SIZE)
+
+    probe = ImageDraw.Draw(Image.new('L', (10, 10)))
+    box = probe.textbbox((0, 0), text, font=font)
+
+    pad = 140
+    W = box[2] - box[0] + pad * 2
+    H = box[3] - box[1] + pad * 2
+
+    letters = Image.new('L', (W, H), 0)
+    ImageDraw.Draw(letters).text((pad - box[0], pad - box[1]), text, font=font, fill=255)
+
+    lp = letters.load()
+
+    # The baseline: the row where most columns' ink stops. Descenders go below it.
+    bottoms = []
+    for x in range(W):
+        low = -1
+        for y in range(H - 1, -1, -1):
+            if lp[x, y] > 128:
+                low = y
+                break
+        bottoms.append(low)
+
+    inked = [b for b in bottoms if b >= 0]
+    counts = {}
+    for b in inked:
+        counts[b // 6] = counts.get(b // 6, 0) + 1
+    baseline = max(counts, key=counts.get) * 6 + 3
+
+    # Columns whose ink ends on the baseline, grouped into stems.
+    stems = []
+    run = None
+    for x in range(W):
+        on = bottoms[x] >= 0 and abs(bottoms[x] - baseline) <= 9
+        if on and run is None:
+            run = [x, x]
+        elif on:
+            run[1] = x
+        elif run is not None:
+            if run[1] - run[0] >= 8:
+                stems.append(run)
+            run = None
+
+    rng = random.Random(1887)
+
+    # Three drips, from stems spread across the word: one in each third, the widest stem
+    # in that third, so they read as the word dripping rather than one letter leaking.
+    wanted = []
+    for third in range(3):
+        lo = W * third / 3.0
+        hi = W * (third + 1) / 3.0
+        here = [st for st in stems if lo <= (st[0] + st[1]) / 2.0 < hi]
+        if here:
+            wanted.append(max(here, key=lambda st: st[1] - st[0]))
+
+    ink = ImageDraw.Draw(letters)
+
+    for st in wanted:
+        cx = (st[0] + st[1]) // 2 + rng.randint(-3, 3)
+        top = max(bottoms[max(0, min(W - 1, cx))], baseline - 2)
+        length = rng.randint(60, 118)
+        wide = max(6, (st[1] - st[0]) * 0.42)
+
+        # Thinning as it falls: a stack of short segments, each narrower than the last.
+        steps = 14
+        for i in range(steps):
+            t = i / float(steps)
+            w = wide * (1.0 - 0.55 * t)
+            y0 = top + length * t
+            y1 = top + length * (t + 1.0 / steps) + 2
+            ink.rectangle((cx - w / 2.0, y0, cx + w / 2.0, y1), fill=255)
+
+        # The bead at the bottom.
+        r = wide * 0.62
+        ink.ellipse((cx - r, top + length - r * 0.6, cx + r, top + length + r * 1.1), fill=255)
+
+    # Spatter under the baseline, denser near it.
+    for _ in range(90):
+        x = rng.randint(pad - 20, W - pad + 20)
+        fall = abs(rng.gauss(0, 26))
+        y = int(baseline + 4 + fall)
+        if y >= H - 1:
+            continue
+        r = rng.choice((1, 1, 1, 2, 2, 3))
+        a = int(255 * max(0.25, 1.0 - fall / 90.0))
+        ImageDraw.Draw(letters).ellipse((x - r, y - r, x + r, y + r), fill=a)
+
+    out = Image.merge('RGBA', (Image.new('L', (W, H), 255),) * 3 + (letters,))
+    return out.crop(out.getbbox())
+
+
 # The reveal: the mark arriving as if it were being sprayed on.
 SPRAY_FRAMES = 8
 SPRAY_BAND = 0.16        # how wide the wet edge is, as a fraction of the word
@@ -534,7 +648,10 @@ def main():
     least = min(float(w) for _, w in found)
     nozzles = [(n, float(w) / least) for n, w in found]
 
-    mark = tag(TEXT)
+    if not os.path.exists(FRAKTUR):
+        raise SystemExit('no UnifrakturCook at ' + FRAKTUR)
+
+    mark = fraktur(WORD)
     mark.save(os.path.join(OUT, 'logo.png'))
 
     # And the same mark arriving, for the panel to run when it opens.
