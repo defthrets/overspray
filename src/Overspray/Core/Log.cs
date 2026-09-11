@@ -136,7 +136,7 @@ namespace Overspray.Core
         /// is one stretched decal instead of a chain of round ones, so the same paint costs a
         /// fraction of the marks.
         /// </summary>
-        public const string Version = "0.4.0";
+        public const string Version = "0.4.1";
         public const string Name = "Overspray";
 
         /// <summary>

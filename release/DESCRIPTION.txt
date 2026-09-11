@@ -1,5 +1,5 @@
 ﻿================================================================================
-  OVERSPRAY 0.4.0 -- copy for the mod page
+  OVERSPRAY 0.4.1 -- copy for the mod page
 ================================================================================
 
 Three lengths and a changelog. Use whichever the site's fields want.
@@ -30,6 +30,16 @@ your save is never touched.
 --------------------------------------------------------------------------------
   3. CHANGELOG  (for the mod page's changelog field)
 --------------------------------------------------------------------------------
+
+0.4.1
+
+  THE CAN STOPPED AFTER HALF A LETTER IN 0.4.0, AND IT IS FIXED. 0.4.0 asked the
+  game whether each mark was still alive and learned a pool budget from the
+  answers; the native lags a frame or more in both directions, so fresh paint
+  read as evicted, the budget fell to its floor in seconds and the can was
+  refused on every dab. The check and the budget are gone. Old tags still come
+  back in seconds and nothing is torn down to do it, and a dab the game's intake
+  refuses now goes up first next frame, because it is the paint in your hand.
 
 0.4.0
 
