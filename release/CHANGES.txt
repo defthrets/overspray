@@ -3,6 +3,20 @@
 ===============================================================================
 
 -------------------------------------------------------------------------------
+  Unreleased
+-------------------------------------------------------------------------------
+
+THE COLOURS COME OUT AS PICKED
+
+Blood as the one texture for everything could not do it: the colour you pick
+multiplies the texture, blood is authored red, and green came out bronze and
+cyan grey. Paint takes colour honestly and is the texture for anything with a
+colour in it again. Black is the one colour that does not care what the
+texture is, and blood's shape is the best on the rack, so black keeps blood.
+Two settings now: CanDecal for the colours, CanDecalDark for black.
+
+
+-------------------------------------------------------------------------------
   0.4.1
 -------------------------------------------------------------------------------
 
