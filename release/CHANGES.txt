@@ -2,10 +2,11 @@
   OVERSPRAY  --  WHAT CHANGED
 ===============================================================================
 
-Unreleased -- 11 September 2026
+-------------------------------------------------------------------------------
+  0.4.0
+-------------------------------------------------------------------------------
 
-
-THE MARK IS BLACKLETTER, AND THE PANEL IS TIDIED ROUND IT.
+THE MARK IS BLACKLETTER, AND THE PANEL IS TIDIED ROUND IT
 
 Overspray in a Fraktur -- UnifrakturCook Bold, under the SIL Open Font
 License, rendered to the same white mask the arched block was -- with paint
@@ -17,7 +18,7 @@ hairline under each, and under the live one a soft fill and a rail in the
 loaded colour. The footer's line of words is three key caps. The cap icons
 are exactly as they were.
 
-THE POOL THE COMPARES ARE NOT.
+THE POOL THE COMPARES ARE NOT
 
 With the thresholds at a hundred thousand the game still took paint down,
 and without a word: its pool is a fixed number of slots, and when they are
@@ -30,7 +31,7 @@ budget is reached, a far mark of ours gives up its slot BEFORE a new one is
 asked for, so what goes is the furthest away rather than the oldest. The
 budget creeps back while nothing is evicted, and the log says the number.
 
-OLD TAGS COME BACK IN SECONDS, AND NOTHING IS TORN DOWN TO DO IT.
+OLD TAGS COME BACK IN SECONDS, AND NOTHING IS TORN DOWN TO DO IT
 
 The game takes about thirty-two new decals a frame. The sweep asked for every
 away-mark in range in one frame every second and a half, read every refusal
@@ -42,7 +43,7 @@ this frame is the intake and is simply tried again next frame; only a
 refusal with nothing placed yet is the pool. Refused dabs from the can are
 kept and come up next frame instead of being dropped.
 
-THE CAN SPRAYS BLOOD, NEVER BULLETS.
+THE CAN SPRAYS BLOOD, NEVER BULLETS
 
 splatters_blood (1010) is the default texture now, on shape: a dense middle
 with flung droplets round the edge, which is what comes off an aerosol. The
@@ -52,7 +53,7 @@ mix texture or the vehicle texture, blood is used instead and the log says so
 once. The ladder is blood then paint and nothing else.
 
 
-THE RECORD CAP IS A QUARTER OF A MILLION.
+THE RECORD CAP IS A QUARTER OF A MILLION
 
 MaxMarks was fifty thousand, set with a two-thousand-decal game pool in mind.
 With DecalLimitAdjuster raising the pool the record is the only cap left, so

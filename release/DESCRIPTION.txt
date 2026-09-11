@@ -1,5 +1,5 @@
 ﻿================================================================================
-  OVERSPRAY 0.2.0 -- copy for the mod page
+  OVERSPRAY 0.4.0 -- copy for the mod page
 ================================================================================
 
 Three lengths and a changelog. Use whichever the site's fields want.
@@ -30,6 +30,40 @@ your save is never touched.
 --------------------------------------------------------------------------------
   3. CHANGELOG  (for the mod page's changelog field)
 --------------------------------------------------------------------------------
+
+0.4.0
+
+  THE MARK IS BLACKLETTER. Overspray in a Fraktur, with paint running off three
+  of its strokes, and the panel tidied round it: hairlines instead of grey boxes,
+  a rail in the loaded colour under the live row, key caps in the footer. It
+  still sprays itself on when the panel opens and still glows in whatever is
+  loaded. The cap icons are exactly as they were.
+
+  OLD TAGS COME BACK IN SECONDS, AND NOTHING IS TORN DOWN TO DO IT. The game
+  takes about thirty-two new decals a frame. The engine was asking for thousands
+  at once, reading every refusal as a full pool, and wiping far paint to make
+  room it could not use -- which is what "my old tags disappear" was. The wall
+  is fed twenty a frame now, nearest first, and a refused mark is kept and tried
+  again next frame instead of being dropped.
+
+  THE ENGINE KNOWS WHEN THE GAME TAKES A MARK DOWN. The game's decal pool is a
+  fixed number of slots, and when they are gone it removes the oldest decal
+  without a word -- yours as readily as its own. The engine now checks that its
+  marks are still alive, learns where the pool ends from where evictions start,
+  keeps under it, and gives up the furthest mark rather than letting the game
+  take the oldest, which could be the piece in front of you.
+
+  BLOOD, NEVER BULLETS. The blood splatter is the default texture, on shape: a
+  dense middle with flung droplets round the edge, which is what comes off a
+  can. The bullet-impact textures are refused wherever the ini asks for them.
+  Black comes out perfect; bright greens and blues come out muddy, because the
+  colour multiplies a red texture.
+
+  THE RECORD HOLDS A QUARTER OF A MILLION MARKS, up from fifty thousand.
+
+  A LIMIT ADJUSTER IS STILL WHAT RAISES THE POOL ITSELF. The log names one, and
+  every twenty seconds while paint is up it prints what is up, what it is
+  allowed to keep up, what was refused and what was found dead.
 
 0.2.0
 
