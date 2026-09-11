@@ -3,7 +3,7 @@
 ===============================================================================
 
 -------------------------------------------------------------------------------
-  Unreleased
+  0.4.2
 -------------------------------------------------------------------------------
 
 THE COLOURS COME OUT AS PICKED
@@ -14,6 +14,15 @@ cyan grey. Paint takes colour honestly and is the texture for anything with a
 colour in it again. Black is the one colour that does not care what the
 texture is, and blood's shape is the best on the rack, so black keeps blood.
 Two settings now: CanDecal for the colours, CanDecalDark for black.
+
+THE RECTANGLES ARE COUNTED FOR THE WHOLE MACHINE
+
+The game keeps one list of rectangles a frame for every script on it and
+drops the rest past about three hundred and fifty, so the mod that draws
+last pays for everybody's frame. The picker now counts into the tally the
+rest of the set keeps -- Posted Up, Bare Minimum, Fumes, Five0 Patrol,
+Bloody Mess -- and the log says what the busiest frame cost and who spent
+it. And when the tick hands the frame back, the log says so, by name.
 
 
 -------------------------------------------------------------------------------
