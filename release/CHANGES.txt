@@ -5,6 +5,19 @@
 Unreleased -- 11 September 2026
 
 
+THE POOL THE COMPARES ARE NOT.
+
+With the thresholds at a hundred thousand the game still took paint down,
+and without a word: its pool is a fixed number of slots, and when they are
+gone the oldest decal goes -- yours as readily as its own -- and the handle
+simply stops being alive. The record never checked. Now a slice of the marks
+believed up is asked IS_DECAL_ALIVE every frame; a dead one is marked away,
+counted, and if near goes straight back up next frame. The count that was up
+when evictions started is the pool, and the engine keeps under it: once the
+budget is reached, a far mark of ours gives up its slot BEFORE a new one is
+asked for, so what goes is the furthest away rather than the oldest. The
+budget creeps back while nothing is evicted, and the log says the number.
+
 OLD TAGS COME BACK IN SECONDS, AND NOTHING IS TORN DOWN TO DO IT.
 
 The game takes about thirty-two new decals a frame. The sweep asked for every
