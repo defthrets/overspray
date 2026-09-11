@@ -188,6 +188,31 @@ namespace Overspray.Paint
         /// </summary>
         private const int PerFrame = 20;
 
+        /// <summary>
+        /// THE POOL, LEARNED. The game does not refuse a decal when its pool is full; it takes
+        /// the oldest one down, silently, and the oldest is as likely to be your own piece on
+        /// this wall as anything. So: how many of ours are up (_up), how many we let be up
+        /// (_budget, learned from where evictions start), and the ones found dead this frame,
+        /// near enough to go straight back (_lost). See Verify, Room and Learn.
+        /// </summary>
+        private readonly List<Mark> _lost = new List<Mark>();
+        private int _up;
+        private int _budget = BudgetCeiling;
+        private int _verifyAt;
+        private int _evicted;
+        private int _upWhenEvicted;
+        private int _calm;
+        private int _saidPoolAt;
+
+        /// <summary>
+        /// How many alive-checks a frame, how far under the observed pool the budget sits, the
+        /// least it will ever be, and the most.
+        /// </summary>
+        private const int VerifyPerFrame = 120;
+        private const int BudgetHeadroom = 24;
+        private const int BudgetFloor = 128;
+        private const int BudgetCeiling = 200000;
+
         public Marks(PaintConfig cfg)
         {
             _cfg = cfg;
@@ -483,6 +508,7 @@ namespace Overspray.Paint
                 if (handle == 0) continue;
 
                 _placedThisFrame++;
+                _up++;
 
                 // A HANDLE IS NOT A DECAL. ADD_DECAL hands back a number whether or not
                 // anything ended up on the wall, so the first one that places gets asked
@@ -573,7 +599,7 @@ namespace Overspray.Paint
             return 0;
         }
 
-        private static void Wipe(Mark m)
+        private void Wipe(Mark m)
         {
             if (m == null || m.Handle == 0) return;
 
@@ -581,6 +607,7 @@ namespace Overspray.Paint
             catch { /* it was going anyway */ }
 
             m.Handle = 0;
+            if (_up > 0) _up--;
         }
 
         /// <summary>
