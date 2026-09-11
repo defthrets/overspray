@@ -674,38 +674,27 @@ def main():
           % (nozzle.size[0] / float(nozzle.size[1])))
     print('  overspray  logo.png %dx%d   can.png %dx%d' % (mark.size + tin.size))
 
-    # And the same treatment for the app inside Posted Up.
+    # And the same mark for the app inside Posted Up.
     #
-    # A DIFFERENT WORD ON PURPOSE. The tile there is called Graffiti and the mod it lives in
-    # is called Posted Up, so a header reading OVERSPRAY would be a third name for a thing
-    # that already has two. What carries across is the look, not the wordmark.
+    # THE SAME WORD, ON PURPOSE NOW. The app's header has read OVERSPRAY since the app
+    # existed -- the mod inside Posted Up is Overspray, and the tile is the way in -- and
+    # for a while this wrote a GRAFFITI mark to files nothing read while the app went on
+    # drawing an overspray.png nobody regenerated. The app reads overspray.png and
+    # overspray_0..7.png, and those are what go across; the caps go with them because the
+    # two pickers draw the same three icons.
     other = os.path.join(os.path.dirname(HERE), 'hoodrich', 'data', 'icons')
 
     if os.path.isdir(other):
-        g = tag('GRAFFITI')
-        g.save(os.path.join(other, 'graffiti.png'))
-        tin.save(os.path.join(other, 'spraycan.png'))
+        mark.save(os.path.join(other, 'overspray.png'))
 
-        # THE APP'S TILE IS A CAP NOW, not a can. sprayapp.png is no longer drawn by anything
-        # -- it and tile() are in the history if the can is ever wanted back.
-        cap_tile().save(os.path.join(other, 'capapp.png'))
+        for i, frame in enumerate(spraying(mark)):
+            frame.save(os.path.join(other, 'overspray_%d.png' % i), optimize=True)
 
         for name, width in nozzles:
             cap(width).save(os.path.join(other, 'cap_%s.png' % name))
 
-        # And the same mark arriving, so the phone's masthead sprays itself on exactly the way
-        # the standalone's does. The look carries across; the word does not.
-        for i, frame in enumerate(spraying(g)):
-            frame.save(os.path.join(other, 'graffiti_%d.png' % i), optimize=True)
-
-        print('  hoodrich   graffiti_0..%d.png  %d KB the lot'
-              % (SPRAY_FRAMES - 1,
-                 sum(os.path.getsize(os.path.join(other, 'graffiti_%d.png' % i))
-                     for i in range(SPRAY_FRAMES)) // 1024))
-
-        print('  hoodrich   graffiti.png %dx%d   spraycan.png %dx%d   capapp.png'
-              % (g.size + tin.size))
-        print('    graffiti aspect %.4f' % (g.size[0] / float(g.size[1])))
+        print('  hoodrich   overspray.png %dx%d, overspray_0..%d.png, the three caps'
+              % (mark.size + (SPRAY_FRAMES - 1,)))
     else:
         print('  hoodrich   not beside this repo; skipped')
 
