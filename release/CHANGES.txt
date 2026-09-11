@@ -1,6 +1,27 @@
-===============================================================================
+﻿===============================================================================
   OVERSPRAY  --  WHAT CHANGED
 ===============================================================================
+
+Unreleased -- 11 September 2026
+
+
+THE CAN SPRAYS BLOOD, NEVER BULLETS.
+
+splatters_blood (1010) is the default texture now, on shape: a dense middle
+with flung droplets round the edge, which is what comes off an aerosol. The
+impact family -- 4010, 4020, 4050, the marks a bullet leaves -- is out of the
+fallback ladder and refused wherever it is asked for: as the can texture, the
+mix texture or the vehicle texture, blood is used instead and the log says so
+once. The ladder is blood then paint and nothing else.
+
+
+THE RECORD CAP IS A QUARTER OF A MILLION.
+
+MaxMarks was fifty thousand, set with a two-thousand-decal game pool in mind.
+With DecalLimitAdjuster raising the pool the record is the only cap left, so
+it is out of the way: 250,000 by default, up to two million. The refusal
+warning names the adjuster and the pair it wants on Enhanced 1.0.1158.13.
+
 
 
 -------------------------------------------------------------------------------

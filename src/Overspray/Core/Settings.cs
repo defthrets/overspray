@@ -101,7 +101,7 @@ namespace Overspray.Core
                 p.CanDensity = Clamp(ini.GetFloat("Paint", "CanDensity", p.CanDensity), 0.25f, 6f);
                 p.Cap = ini.GetInt("Paint", "Cap", p.Cap);
                 p.CanColourGain = Clamp(ini.GetFloat("Paint", "CanColourGain", p.CanColourGain), 0.1f, 8f);
-                p.MaxMarks = (int)Clamp(ini.GetFloat("Paint", "MaxMarks", p.MaxMarks), 16f, 50000f);
+                p.MaxMarks = (int)Clamp(ini.GetFloat("Paint", "MaxMarks", p.MaxMarks), 16f, 2000000f);
 
                 p.ColourTheSmoke = ini.GetBool("Paint", "ColourTheSmoke", p.ColourTheSmoke);
                 p.JetScale = Clamp(ini.GetFloat("Paint", "JetScale", p.JetScale), 0.05f, 4f);
