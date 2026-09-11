@@ -3,6 +3,23 @@
 ===============================================================================
 
 -------------------------------------------------------------------------------
+  0.4.1
+-------------------------------------------------------------------------------
+
+THE CAN STOPPED AFTER HALF A LETTER, AND IT WAS THE EVICTION CHECK
+
+0.4.0 asked the game whether each mark was still alive and learned a pool
+budget from the answers. The probe it put up to prove the native honest
+reported alive after it had been removed: IS_DECAL_ALIVE lags a frame or more
+in both directions, so fresh paint read as evicted, the budget fell to its
+floor in seconds, and the can was refused on every dab. The check, the budget
+and the probe are gone. What stays from 0.4.0 is what was measured rather
+than guessed: the wall fed twenty a frame, nearest first, and a refused dab
+kept and tried again next frame -- ahead of everything else now, because it
+is the paint in your hand.
+
+
+-------------------------------------------------------------------------------
   0.4.0
 -------------------------------------------------------------------------------
 
