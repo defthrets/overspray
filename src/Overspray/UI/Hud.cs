@@ -46,6 +46,7 @@ namespace Overspray.UI
         /// <summary>Filled rectangle, placed by its centre -- which is how DRAW_RECT works.</summary>
         public static void Rect(float cx, float cy, float w, float h, Color c)
         {
+            Ledger.Count();
             Function.Call(Hash.DRAW_RECT, cx, cy, w, h, (int)c.R, (int)c.G, (int)c.B, (int)c.A);
         }
 
